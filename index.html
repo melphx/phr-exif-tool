@@ -298,7 +298,7 @@
         <div>
           <div class="badge">Phoenix Home Remodeling • SEO Neo SOP</div>
           <h1>EXIF + IPTC batch editor</h1>
-          <p>Client-side image metadata tool for PAA images and video thumbnails. No images are uploaded to a server. Process files in the browser, then download the edited copies.</p>
+          <p>Client-side image metadata tool for PAA images and video thumbnails. Images are sent to your Firebase backend for EXIF + IPTC processing, then downloaded back to the browser.</p>
         </div>
         <div class="row">
           <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
@@ -405,7 +405,7 @@ Pixel 5
 Pixel 6
 Pixel 7
 Pixel 8 Pro</textarea>
-            <div class="hint">One per line. 2015+ devices are allowed. A random model is paired for each output image.</div>
+            <div class="hint">One per line. A random model is paired for each output image.</div>
           </label>
         </div>
 
@@ -486,12 +486,12 @@ Pixel 8 Pro</textarea>
         <div class="section-title">
           <div>
             <h2>Images</h2>
-            <p>Add JPG or JPEG files for the batch. Best results are on JPEG images because EXIF/IPTC writing is most consistent there.</p>
+            <p>Add JPG, JPEG, or PNG files for the batch. PNG files will be converted to JPG before upload.</p>
           </div>
         </div>
 
         <div id="dropzone" class="dropzone">
-          <strong>Drop JPG files here</strong>
+          <strong>Drop image files here</strong>
           <p>or</p>
           <label class="btn secondary" style="display:inline-block;">
             Choose images
@@ -510,7 +510,7 @@ Pixel 8 Pro</textarea>
         <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
           <h3>SOP checklist</h3>
           <div class="checklist" id="checklistBox">
-            <div>Advanced mode is baked into this app. No extra click needed.</div>
+            <div>Backend EXIF + IPTC processing is enabled via Firebase.</div>
             <div>Camera make and model are varied for uniqueness.</div>
             <div>EXIF dates are overwritten according to the selected batch rule.</div>
             <div>Artist, copyright, comment, headline, caption, city, and GPS are all generated from the form.</div>
@@ -518,14 +518,15 @@ Pixel 8 Pro</textarea>
           </div>
         </div>
 
-        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually. Those steps can be automated later with Apps Script or a webhook.</p>
+        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually.</p>
       </section>
     </div>
   </div>
 
   <script type="module">
-    import piexif from 'https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js';
     import JSZip from 'https://esm.sh/jszip@3.10.1';
+
+    const FUNCTION_URL = 'https://processimage-p5hobbg7wa-uc.a.run.app';
 
     const $ = (id) => document.getElementById(id);
 
@@ -572,7 +573,7 @@ Pixel 8 Pro</textarea>
     }
 
     function readLines(value) {
-      return value
+      return String(value || '')
         .split(/\r?\n/)
         .map(v => v.trim())
         .filter(Boolean);
@@ -597,21 +598,7 @@ Pixel 8 Pro</textarea>
     }
 
     function sanitizeFileName(name) {
-      return name.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
-    }
-
-    function degToDmsRational(deg) {
-      const absolute = Math.abs(deg);
-      const d = Math.floor(absolute);
-      const minFloat = (absolute - d) * 60;
-      const m = Math.floor(minFloat);
-      const secFloat = (minFloat - m) * 60;
-      const s = Math.round(secFloat * 100);
-      return [
-        [d, 1],
-        [m, 1],
-        [s, 100]
-      ];
+      return String(name || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
     function exifDateTime(date) {
@@ -718,7 +705,9 @@ Pixel 8 Pro</textarea>
 
     function buildSampleFilename(paaText, cityText) {
       const config = getFilenameConfig();
-      if (els.workflowType.value !== 'video-thumbnail') return sanitizeFileName(`${paaText || 'PAA image'} - Phoenix Home Remodeling.jpg`);
+      if (els.workflowType.value !== 'video-thumbnail') {
+        return sanitizeFileName(`${paaText || 'PAA image'} - Phoenix Home Remodeling.jpg`);
+      }
       const service = titleCase(els.service.value.trim());
       const city = titleCase(cityText || els.city.value.trim());
       const tpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
@@ -805,6 +794,7 @@ Pixel 8 Pro</textarea>
 
         const actions = document.createElement('div');
         actions.className = 'row';
+
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn danger';
         removeBtn.textContent = 'Remove';
@@ -814,28 +804,17 @@ Pixel 8 Pro</textarea>
           renderFiles();
         });
 
-        const readBtn = document.createElement('button');
-        readBtn.className = 'btn secondary';
-        readBtn.textContent = 'Inspect';
-        readBtn.addEventListener('click', () => inspectFile(entry));
+        const inspectBtn = document.createElement('button');
+        inspectBtn.className = 'btn secondary';
+        inspectBtn.textContent = 'Inspect';
+        inspectBtn.addEventListener('click', () => {
+          setStatus('info', `Inspect is disabled in frontend mode. Metadata is being written by Firebase on download/process.\n\nProcessed file: ${entry.processedName || 'Not processed yet'}`);
+        });
 
-        actions.append(readBtn, removeBtn);
+        actions.append(inspectBtn, removeBtn);
         row.append(img, meta, actions);
         els.filesContainer.appendChild(row);
       });
-    }
-
-    async function inspectFile(entry) {
-      try {
-        const result = await parseMetadata(entry.file, {
-          args: ['-json', '-n'],
-          transform: (data) => JSON.parse(data)
-        });
-        if (!result.success) throw new Error(result.error || 'Unknown metadata read error.');
-        setStatus('info', `Inspect: ${entry.file.name}\n\n${JSON.stringify(result.data?.[0] || result.data, null, 2)}`);
-      } catch (error) {
-        setStatus('err', `Could not inspect ${entry.file.name}: ${error.message}`);
-      }
     }
 
     function escapeHtml(value) {
@@ -864,7 +843,6 @@ Pixel 8 Pro</textarea>
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
 
-      // white background to avoid transparency issues
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
@@ -873,6 +851,19 @@ Pixel 8 Pro</textarea>
       URL.revokeObjectURL(url);
 
       return new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
+    }
+
+    async function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || '');
+          const parts = result.split(',');
+          resolve(parts.length > 1 ? parts[1] : parts[0]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
     async function addFiles(fileList) {
@@ -892,12 +883,12 @@ Pixel 8 Pro</textarea>
           lastMessage: file.type.includes('png') ? 'Converted PNG → JPG' : 'Queued'
         });
       }
+
       renderFiles();
       setStatus('info', `${state.files.length} image(s) loaded.`);
     }
 
     function buildOutputName(originalName, fileIndex) {
-      const baseName = originalName.replace(/\.[^.]+$/, '');
       const ext = '.jpg';
       const workflow = els.workflowType.value;
       const city = titleCase(els.city.value.trim());
@@ -917,49 +908,6 @@ Pixel 8 Pro</textarea>
       return sanitizeFileName(`${paa} - Phoenix Home Remodeling.jpg`);
     }
 
-    function buildTagMap(date, make, model, gps) {
-      const city = titleCase(els.city.value.trim());
-      const rightsCity = (els.rightsCityUpper.value || city.toUpperCase()).trim();
-      const headline = buildHeadline();
-      const copyright = buildCopyright();
-      const url = els.targetUrl.value.trim();
-      const artist = els.artist.value.trim();
-      const comment = els.userComment.value.trim();
-      const dt = exifDateTime(date);
-
-      return {
-        Artist: artist,
-        Copyright: copyright,
-        UserComment: comment,
-        XPAuthor: artist,
-        XPComment: comment,
-        XPSubject: headline,
-        XPTitle: headline,
-        Make: make,
-        Model: model,
-        DateTimeOriginal: dt,
-        CreateDate: dt,
-        ModifyDate: dt,
-        GPSLatitude: gps.lat,
-        GPSLongitude: gps.lng,
-        GPSLatitudeRef: gps.lat >= 0 ? 'N' : 'S',
-        GPSLongitudeRef: gps.lng >= 0 ? 'E' : 'W',
-        ObjectName: headline,
-        Headline: headline,
-        CaptionAbstract: url,
-        City: city,
-        Byline: artist,
-        CopyrightNotice: copyright,
-        Source: 'PHOENIX HOME REMODELING',
-        Credit: 'PHOENIX HOME REMODELING',
-        WriterEditor: 'PHOENIX HOME REMODELING',
-        CountryPrimaryLocationName: 'UNITED STATES',
-        ProvinceState: 'ARIZONA',
-        SubLocation: rightsCity,
-        XMP: '',
-      };
-    }
-
     async function processFiles() {
       const issues = validateInputs();
       if (issues.length) {
@@ -973,73 +921,62 @@ Pixel 8 Pro</textarea>
       const baseCoordinates = getBaseCoordinates();
       const makes = readLines(els.cameraMakes.value);
       const models = readLines(els.cameraModels.value);
+
       if (!makes.length || !models.length) {
         setStatus('warn', 'Add at least one camera make and one camera model.');
         return;
       }
 
-      setStatus('info', `Processing ${state.files.length} image(s). This runs in your browser and may take a moment for larger files.`);
+      if (!baseCoordinates) {
+        setStatus('warn', 'Could not find ZIP coordinates.');
+        return;
+      }
+
+      setStatus('info', `Processing ${state.files.length} image(s) through Firebase. This may take a moment for larger files.`);
 
       for (let i = 0; i < state.files.length; i++) {
         const entry = state.files[i];
+
         try {
           const fileDate = pickDate();
           const make = makes[i % makes.length] || sample(makes);
           const model = sample(models);
           const gps = jitterCoordinate(baseCoordinates.lat, baseCoordinates.lng);
-          const tags = buildTagMap(fileDate, make, model, gps);
-          const reader = new FileReader();
 
-const blob = await new Promise((resolve, reject) => {
-  reader.onload = function () {
-    try {
-      const jpeg = reader.result;
+          const response = await fetch(FUNCTION_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              imageBase64: await fileToBase64(entry.file),
+              fileName: entry.file.name,
+              metadata: {
+                make,
+                model,
+                copyright: buildCopyright(),
+                date: exifDateTime(fileDate),
+                lat: gps.lat,
+                lng: gps.lng,
+                headline: buildHeadline(),
+                url: els.targetUrl.value.trim(),
+                city: els.city.value.trim()
+              }
+            })
+          });
 
-      const exifObj = {
-        "0th": {},
-        "Exif": {},
-        "GPS": {},
-      };
-
-      exifObj["0th"][piexif.ImageIFD.Make] = make;
-      exifObj["0th"][piexif.ImageIFD.Model] = model;
-      exifObj["0th"][piexif.ImageIFD.Artist] = "Phoenix Home Remodeling";
-      exifObj["0th"][piexif.ImageIFD.Copyright] = buildCopyright();
-
-      exifObj["Exif"][piexif.ExifIFD.DateTimeOriginal] = exifDateTime(fileDate);
-      exifObj["Exif"][piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(
-        "Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205"
-      );
-
-      exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = [gps.lat, 1];
-      exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = [gps.lng, 1];
-
-      const exifBytes = piexif.dump(exifObj);
-      const newData = piexif.insert(exifBytes, jpeg);
-
-      const arr = new Uint8Array(newData.length);
-      for (let i = 0; i < newData.length; i++) {
-        arr[i] = newData.charCodeAt(i);
-      }
-
-      resolve(new Blob([arr], { type: "image/jpeg" }));
-    } catch (e) {
-      reject(e);
-    }
-  };
-
-  reader.readAsDataURL(entry.file);
-});
-
-          if (!result.success) {
-            throw new Error(result.error || 'Unknown metadata write error.');
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Request failed with status ${response.status}`);
           }
 
-          const blob = new Blob([result.data], { type: 'image/jpeg' });
+          const blob = await response.blob();
           const name = buildOutputName(entry.file.name, i);
+
           entry.processedBlob = blob;
           entry.processedName = name;
           entry.lastMessage = `Done • ${ymdDate(fileDate)} • ${make} / ${model} • ${gps.lat}, ${gps.lng}`;
+
           state.processed.push({ name, blob });
           renderFiles();
         } catch (error) {
@@ -1061,8 +998,10 @@ const blob = await new Promise((resolve, reject) => {
         setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.');
         return;
       }
+
       const zip = new JSZip();
       state.processed.forEach(item => zip.file(item.name, item.blob));
+
       const blob = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a');
       const city = titleCase(els.city.value.trim()) || 'batch';
@@ -1126,7 +1065,9 @@ const blob = await new Promise((resolve, reject) => {
       e.preventDefault();
       els.dropzone.classList.add('drag');
     });
+
     els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
+
     els.dropzone.addEventListener('drop', (e) => {
       e.preventDefault();
       els.dropzone.classList.remove('drag');
