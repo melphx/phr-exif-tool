@@ -730,21 +730,17 @@ Pixel 8 Pro</textarea>
     function validateInputs() {
       const issues = [];
 
-      // STRICT MODE ENABLED (2015+ devices allowed)
-
       const required = [
         ['Primary keyword', els.primaryKeyword.value],
         ['Service', els.service.value],
         ['City', els.city.value],
         ['ZIP code', els.zipCode.value],
         ['Target URL', els.targetUrl.value],
-        ['PAA / image text', els.paaText.value],
-        ['Artist', els.artist.value],
-        ['User comment', els.userComment.value],
+        ['PAA / image text', els.paaText.value]
       ];
 
       for (const [label, value] of required) {
-        if (!String(value || '').trim()) issues.push(`${label} is required.`);
+        if (!String(value || '').trim()) issues.push(label + ' is required.');
       }
 
       if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) {
@@ -758,34 +754,25 @@ Pixel 8 Pro</textarea>
         issues.push('Uppercase IPTC rights city must be fully uppercase.');
       }
 
-      const copy = buildCopyright();
-      if (!/^\d{4}\s/.test(copy)) {
-        issues.push('Copyright year should start with a 4-digit year.');
-      }
-
       const zipLookup = getZipLookup();
       if (!zipLookup[(els.zipCode.value || '').trim()]) {
-        issues.push('ZIP code was not found in the ZIP → coordinates JSON lookup. Paste the correct ZIP mapping first.');
+        issues.push('ZIP code not found in lookup.');
       }
 
       if (!state.files.length) {
         issues.push('Add images before processing.');
       }
 
-      // FILE COUNT RULES
       if (els.workflowType.value === 'video-thumbnail' && state.files.length !== 2) {
-        issues.push('Video thumbnail workflow requires exactly 2 images.');
+        issues.push('Video thumbnail requires exactly 2 images.');
       }
+
       if ((els.workflowType.value === 'city-paa' || els.workflowType.value === 'brand-paa') && state.files.length !== 6) {
-        issues.push('PAA workflow requires exactly 6 images.');
+        issues.push('PAA requires exactly 6 images.');
       }
 
       if (els.dateMode.value === 'same-manual' && !els.manualDate.value) {
-        issues.push('Manual date is required for the selected date mode.');
-      }
-
-      // Camera model age validation removed per request
-      // (all models allowed)
+        issues.push('Manual date is required.');
       }
 
       return issues;
