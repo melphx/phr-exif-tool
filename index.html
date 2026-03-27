@@ -478,7 +478,7 @@ Pixel 8 Pro</textarea>
           <p>or</p>
           <label class="btn secondary" style="display:inline-block;">
             Choose images
-            <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg" multiple hidden />
+            <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg,image/png,.png" multiple hidden />
           </label>
           <div class="hint" style="margin-top:12px;">For the 6 PAA images, load all 6 at once. For video thumbnails, load the 2 thumbnail images together.</div>
         </div>
@@ -712,6 +712,9 @@ Pixel 8 Pro</textarea>
 
     function validateInputs() {
       const issues = [];
+
+      // STRICT MODE ENABLED
+
       const required = [
         ['Primary keyword', els.primaryKeyword.value],
         ['Service', els.service.value],
@@ -749,7 +752,15 @@ Pixel 8 Pro</textarea>
       }
 
       if (!state.files.length) {
-        issues.push('Add at least one image.');
+        issues.push('Add images before processing.');
+      }
+
+      // FILE COUNT RULES
+      if (els.workflowType.value === 'video-thumbnail' && state.files.length !== 2) {
+        issues.push('Video thumbnail workflow requires exactly 2 images.');
+      }
+      if ((els.workflowType.value === 'city-paa' || els.workflowType.value === 'brand-paa') && state.files.length !== 6) {
+        issues.push('PAA workflow requires exactly 6 images.');
       }
 
       if (els.dateMode.value === 'same-manual' && !els.manualDate.value) {
@@ -828,18 +839,49 @@ Pixel 8 Pro</textarea>
         .replaceAll("'", '&#039;');
     }
 
-    function addFiles(fileList) {
-      const files = Array.from(fileList).filter(file => /jpe?g/i.test(file.type) || /\.jpe?g$/i.test(file.name));
+    async function convertToJpeg(file) {
+      if (/jpe?g/i.test(file.type)) return file;
+      if (!/png/i.test(file.type)) return file;
+
+      const img = document.createElement('img');
+      const url = URL.createObjectURL(file);
+      await new Promise((res, rej) => {
+        img.onload = res;
+        img.onerror = rej;
+        img.src = url;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+
+      // white background to avoid transparency issues
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      URL.revokeObjectURL(url);
+
+      return new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
+    }
+
+    async function addFiles(fileList) {
+      const files = Array.from(fileList).filter(file => /jpe?g|png/i.test(file.type) || /\.(jpe?g|png)$/i.test(file.name));
       const existing = new Set(state.files.map(v => `${v.file.name}_${v.file.size}`));
+
       for (const file of files) {
-        const key = `${file.name}_${file.size}`;
+        const converted = await convertToJpeg(file);
+        const key = `${converted.name}_${converted.size}`;
         if (existing.has(key)) continue;
+
         state.files.push({
-          file,
-          previewUrl: URL.createObjectURL(file),
+          file: converted,
+          previewUrl: URL.createObjectURL(converted),
           processedBlob: null,
           processedName: '',
-          lastMessage: 'Queued'
+          lastMessage: file.type.includes('png') ? 'Converted PNG → JPG' : 'Queued'
         });
       }
       renderFiles();
@@ -864,7 +906,7 @@ Pixel 8 Pro</textarea>
         return sanitizeFileName(`${orientation}${body}${ext}`);
       }
 
-      return sanitizeFileName(`${baseName}${ext}`);
+      return sanitizeFileName(`${paa} - Phoenix Home Remodeling.jpg`);
     }
 
     function buildTagMap(date, make, model, gps) {
