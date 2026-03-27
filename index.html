@@ -784,17 +784,8 @@ Pixel 8 Pro</textarea>
         issues.push('Manual date is required for the selected date mode.');
       }
 
-      const models = readLines(els.cameraModels.value).map(v => v.toLowerCase());
-      const bannedStarts = [
-        'iphone 1', 'iphone 2', 'iphone 3', 'iphone 4', 'iphone 5', 'iphone 6',
-        'galaxy s1', 'galaxy s2', 'galaxy s3', 'galaxy s4', 'galaxy s5', 'galaxy s6', 'galaxy s7',
-        'pixel 1', 'pixel 2'
-      ];
-      for (const model of models) {
-        if (bannedStarts.some(prefix => model.startsWith(prefix))) {
-          issues.push('Only 2015+ phone models are allowed. Remove older devices.');
-          break;
-        }
+      // Camera model age validation removed per request
+      // (all models allowed)
       }
 
       return issues;
