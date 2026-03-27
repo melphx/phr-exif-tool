@@ -524,7 +524,7 @@ Pixel 8 Pro</textarea>
   </div>
 
   <script type="module">
-    import { writeMetadata, parseMetadata } from 'https://esm.sh/@uswriting/exiftool@latest';
+    import piexif from 'https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js';
     import JSZip from 'https://esm.sh/jszip@3.10.1';
 
     const $ = (id) => document.getElementById(id);
@@ -988,9 +988,48 @@ Pixel 8 Pro</textarea>
           const model = sample(models);
           const gps = jitterCoordinate(baseCoordinates.lat, baseCoordinates.lng);
           const tags = buildTagMap(fileDate, make, model, gps);
-          const result = await writeMetadata(entry.file, tags, {
-            args: ['-overwrite_original']
-          });
+          const reader = new FileReader();
+
+const blob = await new Promise((resolve, reject) => {
+  reader.onload = function () {
+    try {
+      const jpeg = reader.result;
+
+      const exifObj = {
+        "0th": {},
+        "Exif": {},
+        "GPS": {},
+      };
+
+      exifObj["0th"][piexif.ImageIFD.Make] = make;
+      exifObj["0th"][piexif.ImageIFD.Model] = model;
+      exifObj["0th"][piexif.ImageIFD.Artist] = "Phoenix Home Remodeling";
+      exifObj["0th"][piexif.ImageIFD.Copyright] = buildCopyright();
+
+      exifObj["Exif"][piexif.ExifIFD.DateTimeOriginal] = exifDateTime(fileDate);
+      exifObj["Exif"][piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(
+        "Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205"
+      );
+
+      exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = [gps.lat, 1];
+      exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = [gps.lng, 1];
+
+      const exifBytes = piexif.dump(exifObj);
+      const newData = piexif.insert(exifBytes, jpeg);
+
+      const arr = new Uint8Array(newData.length);
+      for (let i = 0; i < newData.length; i++) {
+        arr[i] = newData.charCodeAt(i);
+      }
+
+      resolve(new Blob([arr], { type: "image/jpeg" }));
+    } catch (e) {
+      reject(e);
+    }
+  };
+
+  reader.readAsDataURL(entry.file);
+});
 
           if (!result.success) {
             throw new Error(result.error || 'Unknown metadata write error.');
