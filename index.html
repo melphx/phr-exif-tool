@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phoenix Home Remodeling EXIF Tool</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --panel-2: #18233a;
+      --text: #e8eefc;
+      --muted: #9fb0d1;
+      --accent: #76a9ff;
+      --accent-2: #4ade80;
+      --danger: #fb7185;
+      --warning: #fbbf24;
+      --border: #2a3859;
+      --shadow: 0 12px 30px rgba(0,0,0,.22);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #09101c 0%, #0f172a 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1350px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1, h2, h3 { margin: 0 0 12px; }
+    p { color: var(--muted); line-height: 1.5; }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 24px;
+      background: rgba(18, 26, 43, .8);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #0f203f;
+      border: 1px solid #27457d;
+      color: #cfe0ff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.25fr .95fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1080px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: rgba(18, 26, 43, .88);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .field-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .field-grid.full > * { grid-column: 1 / -1; }
+
+    @media (max-width: 780px) {
+      .field-grid, .field-grid.three { grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #dbe7ff;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(118, 169, 255, .18);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      color: #08111f;
+      background: linear-gradient(180deg, #a7c5ff 0%, #76a9ff 100%);
+    }
+
+    .btn.secondary {
+      background: #18233a;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn.success {
+      background: linear-gradient(180deg, #9df3be 0%, #4ade80 100%);
+      color: #062813;
+    }
+
+    .btn.warn {
+      background: linear-gradient(180deg, #fddf92 0%, #fbbf24 100%);
+      color: #271802;
+    }
+
+    .btn.danger {
+      background: linear-gradient(180deg, #fecdd3 0%, #fb7185 100%);
+      color: #33060c;
+    }
+
+    .dropzone {
+      border: 2px dashed #385281;
+      border-radius: 16px;
+      padding: 22px;
+      text-align: center;
+      background: rgba(15, 23, 42, .6);
+      transition: .18s ease;
+    }
+
+    .dropzone.drag {
+      border-color: var(--accent-2);
+      background: rgba(17, 46, 31, .25);
+    }
+
+    .files {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      max-height: 460px;
+      overflow: auto;
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      background: rgba(24, 35, 58, .7);
+    }
+
+    .thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid #2b4168;
+      background: #101827;
+    }
+
+    .meta {
+      display: grid;
+      gap: 6px;
+    }
+
+    .meta small { color: var(--muted); }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      white-space: pre-wrap;
+    }
+
+    .status.info { background: #0f203f; color: #d9e7ff; border-color: #234270; }
+    .status.ok { background: #0b2f1c; color: #d2fbe0; border-color: #1f7a44; }
+    .status.warn { background: #33260a; color: #fdecc0; border-color: #8d6410; }
+    .status.err { background: #38111a; color: #ffd5dc; border-color: #8d2942; }
+
+    .checklist {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checklist div {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, .55);
+      color: #dde7fb;
+      font-size: 13px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 780px) {
+      .split { grid-template-columns: 1fr; }
+    }
+
+    code.inline {
+      background: #101827;
+      border: 1px solid #23324e;
+      border-radius: 8px;
+      padding: 3px 7px;
+      color: #d6e3ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="title-row">
+        <div>
+          <div class="badge">Phoenix Home Remodeling • SEO Neo SOP</div>
+          <h1>EXIF + IPTC batch editor</h1>
+          <p>Client-side image metadata tool for PAA images and video thumbnails. No images are uploaded to a server. Process files in the browser, then download the edited copies.</p>
+        </div>
+        <div class="row">
+          <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
+          <button class="btn warn" id="validateBtn">Validate inputs</button>
+          <button class="btn success" id="processBtn">GO EXIFING</button>
+        </div>
+      </div>
+      <div id="globalStatus" class="status info">Ready. Add images, fill the template, validate, then click GO EXIFING.</div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Template + SOP fields</h2>
+            <p>Anything in uppercase in your SOP is surfaced here so it is harder to miss.</p>
+          </div>
+        </div>
+
+        <div class="field-grid full">
+          <label>
+            Workflow type
+            <select id="workflowType">
+              <option value="city-paa">City PAA</option>
+              <option value="brand-paa">Brand PAA</option>
+              <option value="video-thumbnail">Video Thumbnail</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            Primary keyword
+            <input id="primaryKeyword" placeholder="kitchen remodeling contractor in Chandler" />
+          </label>
+          <label>
+            Service
+            <input id="service" placeholder="bathroom remodeling" />
+          </label>
+          <label>
+            City
+            <input id="city" placeholder="Chandler" />
+          </label>
+          <label>
+            ZIP code
+            <input id="zipCode" placeholder="85226" />
+          </label>
+          <label>
+            Target URL
+            <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
+          </label>
+          <label>
+            PAA / image text
+            <input id="paaText" placeholder="Who is the best kitchen remodeling contractor in Chandler" />
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            Company / Artist
+            <input id="artist" value="Phoenix Home Remodeling" />
+          </label>
+          <label>
+            Copyright year
+            <input id="copyrightYear" value="2026" />
+          </label>
+          <label>
+            User comment
+            <input id="userComment" value="Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205" />
+          </label>
+          <label>
+            Uppercase IPTC rights city
+            <input id="rightsCityUpper" placeholder="CHANDLER" />
+          </label>
+        </div>
+
+        <div class="split" style="margin-top:12px;">
+          <label>
+            Phone brands pool
+            <textarea id="cameraMakes">Apple
+Samsung
+Google</textarea>
+            <div class="hint">One per line. The app rotates brands for variety.</div>
+          </label>
+          <label>
+            Camera models pool
+            <textarea id="cameraModels">iPhone 15 Pro
+Galaxy S24
+Pixel 8 Pro</textarea>
+            <div class="hint">One per line. A random model is paired for each output image.</div>
+          </label>
+        </div>
+
+        <div class="field-grid three" style="margin-top:12px;">
+          <label>
+            Date mode
+            <select id="dateMode">
+              <option value="same-random">One random date for whole batch</option>
+              <option value="same-manual">Manual date for whole batch</option>
+              <option value="per-file-random">Random date per file</option>
+            </select>
+          </label>
+          <label>
+            Manual date (if selected)
+            <input id="manualDate" type="date" />
+          </label>
+          <label>
+            Random date year range
+            <input id="yearRange" value="2025-2026" placeholder="2025-2026" />
+          </label>
+        </div>
+
+        <div class="split" style="margin-top:12px;">
+          <label>
+            ZIP → coordinates lookup (JSON)
+            <textarea id="zipLookup" spellcheck="false">{
+  "85226": { "city": "Chandler", "lat": 33.3072, "lng": -111.8910 },
+  "85224": { "city": "Chandler", "lat": 33.3277, "lng": -111.8755 },
+  "85225": { "city": "Chandler", "lat": 33.3062, "lng": -111.8315 },
+  "85286": { "city": "Chandler", "lat": 33.2767, "lng": -111.8425 },
+  "85295": { "city": "Gilbert", "lat": 33.3045, "lng": -111.7421 },
+  "85296": { "city": "Gilbert", "lat": 33.3201, "lng": -111.7361 },
+  "85297": { "city": "Gilbert", "lat": 33.2784, "lng": -111.7100 },
+  "85233": { "city": "Gilbert", "lat": 33.3645, "lng": -111.8081 },
+  "85044": { "city": "Phoenix", "lat": 33.3348, "lng": -111.9977 },
+  "85048": { "city": "Phoenix", "lat": 33.2942, "lng": -111.9823 },
+  "85202": { "city": "Mesa", "lat": 33.3790, "lng": -111.8757 },
+  "85204": { "city": "Mesa", "lat": 33.4011, "lng": -111.7852 },
+  "85206": { "city": "Mesa", "lat": 33.3964, "lng": -111.7189 },
+  "85210": { "city": "Mesa", "lat": 33.3897, "lng": -111.8446 },
+  "85212": { "city": "Mesa", "lat": 33.3300, "lng": -111.6347 },
+  "85213": { "city": "Mesa", "lat": 33.4373, "lng": -111.7708 },
+  "85281": { "city": "Tempe", "lat": 33.4255, "lng": -111.9400 },
+  "85282": { "city": "Tempe", "lat": 33.3901, "lng": -111.9282 },
+  "85283": { "city": "Tempe", "lat": 33.3661, "lng": -111.9258 }
+}</textarea>
+            <div class="hint">Paste your own ZIP list from the sheet later. The app adds slight jitter so city-specific images do not reuse identical coordinates.</div>
+          </label>
+          <label>
+            Output plan / filename helper (JSON)
+            <textarea id="filenameConfig" spellcheck="false">{
+  "videoThumbnailPortraitPrefix": "Portrait Thumbnail - ",
+  "videoThumbnailLandscapePrefix": "Landscape Thumbnail - ",
+  "thumbnailTemplate": "Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling",
+  "thumbnailSuffixes": ["Company", "Contractor"]
+}</textarea>
+            <div class="hint">This is optional. It is used for the helper preview and batch naming suggestions.</div>
+          </label>
+        </div>
+
+        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
+          <div class="section-title">
+            <h3>Computed preview</h3>
+            <button class="btn secondary" id="refreshPreviewBtn">Refresh preview</button>
+          </div>
+          <div class="checklist">
+            <div><strong>Headline:</strong> <span id="previewHeadline" class="mono"></span></div>
+            <div><strong>Caption / URL:</strong> <span id="previewCaption" class="mono"></span></div>
+            <div><strong>Copyright:</strong> <span id="previewCopyright" class="mono"></span></div>
+            <div><strong>Rights city:</strong> <span id="previewRightsCity" class="mono"></span></div>
+            <div><strong>GPS sample:</strong> <span id="previewGps" class="mono"></span></div>
+            <div><strong>Sample thumbnail filename:</strong> <span id="previewFilename" class="mono"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Images</h2>
+            <p>Add JPG or JPEG files for the batch. Best results are on JPEG images because EXIF/IPTC writing is most consistent there.</p>
+          </div>
+        </div>
+
+        <div id="dropzone" class="dropzone">
+          <strong>Drop JPG files here</strong>
+          <p>or</p>
+          <label class="btn secondary" style="display:inline-block;">
+            Choose images
+            <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg" multiple hidden />
+          </label>
+          <div class="hint" style="margin-top:12px;">For the 6 PAA images, load all 6 at once. For video thumbnails, load the 2 thumbnail images together.</div>
+        </div>
+
+        <div class="row" style="margin-top:14px;">
+          <button class="btn secondary" id="clearFilesBtn">Clear images</button>
+          <button class="btn secondary" id="downloadZipBtn">Download processed set (.zip)</button>
+        </div>
+
+        <div id="filesContainer" class="files"></div>
+
+        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
+          <h3>SOP checklist</h3>
+          <div class="checklist" id="checklistBox">
+            <div>Advanced mode is baked into this app. No extra click needed.</div>
+            <div>Camera make and model are varied for uniqueness.</div>
+            <div>EXIF dates are overwritten according to the selected batch rule.</div>
+            <div>Artist, copyright, comment, headline, caption, city, and GPS are all generated from the form.</div>
+            <div>Use <span class="mono">Validate inputs</span> before running so uppercase fields and URLs are checked.</div>
+          </div>
+        </div>
+
+        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually. Those steps can be automated later with Apps Script or a webhook.</p>
+      </section>
+    </div>
+  </div>
+
+  <script type="module">
+    import { writeMetadata, parseMetadata } from 'https://esm.sh/@uswriting/exiftool@latest';
+    import JSZip from 'https://esm.sh/jszip@3.10.1';
+
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      files: [],
+      processed: [],
+      batchDate: null,
+    };
+
+    const els = {
+      workflowType: $('workflowType'),
+      primaryKeyword: $('primaryKeyword'),
+      service: $('service'),
+      city: $('city'),
+      zipCode: $('zipCode'),
+      targetUrl: $('targetUrl'),
+      paaText: $('paaText'),
+      artist: $('artist'),
+      copyrightYear: $('copyrightYear'),
+      userComment: $('userComment'),
+      rightsCityUpper: $('rightsCityUpper'),
+      cameraMakes: $('cameraMakes'),
+      cameraModels: $('cameraModels'),
+      dateMode: $('dateMode'),
+      manualDate: $('manualDate'),
+      yearRange: $('yearRange'),
+      zipLookup: $('zipLookup'),
+      filenameConfig: $('filenameConfig'),
+      fileInput: $('fileInput'),
+      filesContainer: $('filesContainer'),
+      globalStatus: $('globalStatus'),
+      previewHeadline: $('previewHeadline'),
+      previewCaption: $('previewCaption'),
+      previewCopyright: $('previewCopyright'),
+      previewRightsCity: $('previewRightsCity'),
+      previewGps: $('previewGps'),
+      previewFilename: $('previewFilename'),
+      dropzone: $('dropzone'),
+    };
+
+    function setStatus(type, message) {
+      els.globalStatus.className = `status ${type}`;
+      els.globalStatus.textContent = message;
+    }
+
+    function readLines(value) {
+      return value
+        .split(/\r?\n/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function safeJsonParse(text, fallback) {
+      try {
+        return JSON.parse(text);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function sample(arr) {
+      return arr[Math.floor(Math.random() * arr.length)] || '';
+    }
+
+    function titleCase(text) {
+      return (text || '')
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function sanitizeFileName(name) {
+      return name.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function degToDmsRational(deg) {
+      const absolute = Math.abs(deg);
+      const d = Math.floor(absolute);
+      const minFloat = (absolute - d) * 60;
+      const m = Math.floor(minFloat);
+      const secFloat = (minFloat - m) * 60;
+      const s = Math.round(secFloat * 100);
+      return [
+        [d, 1],
+        [m, 1],
+        [s, 100]
+      ];
+    }
+
+    function exifDateTime(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const hh = String(Math.floor(Math.random() * 9) + 9).padStart(2, '0');
+      const mm = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+      const ss = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+      return `${y}:${m}:${d} ${hh}:${mm}:${ss}`;
+    }
+
+    function ymdDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function pickDate() {
+      const mode = els.dateMode.value;
+      if (mode === 'same-manual') {
+        const raw = els.manualDate.value;
+        if (!raw) throw new Error('Manual date is required when date mode is set to manual.');
+        return new Date(`${raw}T12:00:00`);
+      }
+
+      if (mode === 'same-random') {
+        if (!state.batchDate) state.batchDate = randomDateFromRange(els.yearRange.value);
+        return state.batchDate;
+      }
+
+      return randomDateFromRange(els.yearRange.value);
+    }
+
+    function randomDateFromRange(rangeText) {
+      const match = String(rangeText || '').trim().match(/^(\d{4})\s*-\s*(\d{4})$/);
+      let startYear = 2025;
+      let endYear = 2026;
+      if (match) {
+        startYear = Number(match[1]);
+        endYear = Number(match[2]);
+      }
+      if (endYear < startYear) [startYear, endYear] = [endYear, startYear];
+      const start = new Date(startYear, 0, 1).getTime();
+      const end = new Date(endYear, 11, 31).getTime();
+      return new Date(start + Math.random() * (end - start));
+    }
+
+    function getZipLookup() {
+      return safeJsonParse(els.zipLookup.value, {});
+    }
+
+    function getFilenameConfig() {
+      return safeJsonParse(els.filenameConfig.value, {});
+    }
+
+    function getBaseCoordinates() {
+      const lookup = getZipLookup();
+      const zip = (els.zipCode.value || '').trim();
+      if (lookup[zip]) return lookup[zip];
+      return null;
+    }
+
+    function jitterCoordinate(lat, lng) {
+      const latJitter = (Math.random() - 0.5) * 0.018;
+      const lngJitter = (Math.random() - 0.5) * 0.018;
+      return {
+        lat: +(lat + latJitter).toFixed(6),
+        lng: +(lng + lngJitter).toFixed(6)
+      };
+    }
+
+    function computeMetadataPreview() {
+      const city = titleCase(els.city.value.trim());
+      const rightsCity = (els.rightsCityUpper.value || city.toUpperCase()).trim();
+      const paa = els.paaText.value.trim();
+      const headline = buildHeadline();
+      const copyright = buildCopyright();
+      const caption = els.targetUrl.value.trim();
+      const base = getBaseCoordinates();
+      const jittered = base ? jitterCoordinate(base.lat, base.lng) : null;
+
+      els.previewHeadline.textContent = headline || '—';
+      els.previewCaption.textContent = caption || '—';
+      els.previewCopyright.textContent = copyright || '—';
+      els.previewRightsCity.textContent = rightsCity || '—';
+      els.previewGps.textContent = jittered ? `${jittered.lat}, ${jittered.lng}` : 'ZIP not found in JSON lookup';
+      els.previewFilename.textContent = buildSampleFilename(paa, city) || '—';
+    }
+
+    function buildHeadline() {
+      const paa = els.paaText.value.trim();
+      if (!paa) return '';
+      if (/phoenix home remodeling/i.test(paa)) return paa;
+      return `${paa} | Phoenix Home Remodeling`;
+    }
+
+    function buildCopyright() {
+      const year = (els.copyrightYear.value || '2026').trim();
+      const keyword = (els.primaryKeyword.value || els.paaText.value || '').trim();
+      return `${year} ${keyword} - Phoenix Home Remodeling`;
+    }
+
+    function buildSampleFilename(paaText, cityText) {
+      const config = getFilenameConfig();
+      if (els.workflowType.value !== 'video-thumbnail') return sanitizeFileName(`${paaText || 'PAA image'} - Phoenix Home Remodeling.jpg`);
+      const service = titleCase(els.service.value.trim());
+      const city = titleCase(cityText || els.city.value.trim());
+      const tpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
+      const suffix = (config.thumbnailSuffixes && config.thumbnailSuffixes[0]) || 'Company';
+      const body = tpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
+      return sanitizeFileName(`${config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - '}${body}.jpg`);
+    }
+
+    function validateInputs() {
+      const issues = [];
+      const required = [
+        ['Primary keyword', els.primaryKeyword.value],
+        ['Service', els.service.value],
+        ['City', els.city.value],
+        ['ZIP code', els.zipCode.value],
+        ['Target URL', els.targetUrl.value],
+        ['PAA / image text', els.paaText.value],
+        ['Artist', els.artist.value],
+        ['User comment', els.userComment.value],
+      ];
+
+      for (const [label, value] of required) {
+        if (!String(value || '').trim()) issues.push(`${label} is required.`);
+      }
+
+      if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) {
+        issues.push('Target URL must start with http:// or https://');
+      }
+
+      const rightsCity = (els.rightsCityUpper.value || '').trim();
+      if (!rightsCity) {
+        issues.push('Uppercase IPTC rights city is required.');
+      } else if (rightsCity !== rightsCity.toUpperCase()) {
+        issues.push('Uppercase IPTC rights city must be fully uppercase.');
+      }
+
+      const copy = buildCopyright();
+      if (!/^\d{4}\s/.test(copy)) {
+        issues.push('Copyright year should start with a 4-digit year.');
+      }
+
+      const zipLookup = getZipLookup();
+      if (!zipLookup[(els.zipCode.value || '').trim()]) {
+        issues.push('ZIP code was not found in the ZIP → coordinates JSON lookup. Paste the correct ZIP mapping first.');
+      }
+
+      if (!state.files.length) {
+        issues.push('Add at least one image.');
+      }
+
+      if (els.dateMode.value === 'same-manual' && !els.manualDate.value) {
+        issues.push('Manual date is required for the selected date mode.');
+      }
+
+      return issues;
+    }
+
+    function renderFiles() {
+      els.filesContainer.innerHTML = '';
+      if (!state.files.length) {
+        els.filesContainer.innerHTML = '<div class="status info">No files loaded yet.</div>';
+        return;
+      }
+
+      state.files.forEach((entry, index) => {
+        const row = document.createElement('div');
+        row.className = 'file-row';
+
+        const img = document.createElement('img');
+        img.className = 'thumb';
+        img.src = entry.previewUrl;
+        img.alt = entry.file.name;
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `
+          <strong>${escapeHtml(entry.file.name)}</strong>
+          <small>${Math.round(entry.file.size / 1024)} KB • ${entry.file.type || 'image/jpeg'}</small>
+          <small>${entry.processedName ? `Output: ${escapeHtml(entry.processedName)}` : 'Pending'}</small>
+          <small>${entry.lastMessage ? escapeHtml(entry.lastMessage) : 'Metadata not written yet'}</small>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'row';
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn danger';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+          URL.revokeObjectURL(entry.previewUrl);
+          state.files.splice(index, 1);
+          renderFiles();
+        });
+
+        const readBtn = document.createElement('button');
+        readBtn.className = 'btn secondary';
+        readBtn.textContent = 'Inspect';
+        readBtn.addEventListener('click', () => inspectFile(entry));
+
+        actions.append(readBtn, removeBtn);
+        row.append(img, meta, actions);
+        els.filesContainer.appendChild(row);
+      });
+    }
+
+    async function inspectFile(entry) {
+      try {
+        const result = await parseMetadata(entry.file, {
+          args: ['-json', '-n'],
+          transform: (data) => JSON.parse(data)
+        });
+        if (!result.success) throw new Error(result.error || 'Unknown metadata read error.');
+        setStatus('info', `Inspect: ${entry.file.name}\n\n${JSON.stringify(result.data?.[0] || result.data, null, 2)}`);
+      } catch (error) {
+        setStatus('err', `Could not inspect ${entry.file.name}: ${error.message}`);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function addFiles(fileList) {
+      const files = Array.from(fileList).filter(file => /jpe?g/i.test(file.type) || /\.jpe?g$/i.test(file.name));
+      const existing = new Set(state.files.map(v => `${v.file.name}_${v.file.size}`));
+      for (const file of files) {
+        const key = `${file.name}_${file.size}`;
+        if (existing.has(key)) continue;
+        state.files.push({
+          file,
+          previewUrl: URL.createObjectURL(file),
+          processedBlob: null,
+          processedName: '',
+          lastMessage: 'Queued'
+        });
+      }
+      renderFiles();
+      setStatus('info', `${state.files.length} image(s) loaded.`);
+    }
+
+    function buildOutputName(originalName, fileIndex) {
+      const baseName = originalName.replace(/\.[^.]+$/, '');
+      const ext = '.jpg';
+      const workflow = els.workflowType.value;
+      const city = titleCase(els.city.value.trim());
+      const service = titleCase(els.service.value.trim());
+      const paa = els.paaText.value.trim();
+      const config = getFilenameConfig();
+
+      if (workflow === 'video-thumbnail') {
+        const suffixes = Array.isArray(config.thumbnailSuffixes) && config.thumbnailSuffixes.length ? config.thumbnailSuffixes : ['Company', 'Contractor'];
+        const suffix = suffixes[fileIndex % suffixes.length];
+        const orientation = fileIndex % 2 === 0 ? (config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - ') : (config.videoThumbnailPortraitPrefix || 'Portrait Thumbnail - ');
+        const bodyTpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
+        const body = bodyTpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
+        return sanitizeFileName(`${orientation}${body}${ext}`);
+      }
+
+      return sanitizeFileName(`${baseName}${ext}`);
+    }
+
+    function buildTagMap(date, make, model, gps) {
+      const city = titleCase(els.city.value.trim());
+      const rightsCity = (els.rightsCityUpper.value || city.toUpperCase()).trim();
+      const headline = buildHeadline();
+      const copyright = buildCopyright();
+      const url = els.targetUrl.value.trim();
+      const artist = els.artist.value.trim();
+      const comment = els.userComment.value.trim();
+      const dt = exifDateTime(date);
+
+      return {
+        Artist: artist,
+        Copyright: copyright,
+        UserComment: comment,
+        XPAuthor: artist,
+        XPComment: comment,
+        XPSubject: headline,
+        XPTitle: headline,
+        Make: make,
+        Model: model,
+        DateTimeOriginal: dt,
+        CreateDate: dt,
+        ModifyDate: dt,
+        GPSLatitude: gps.lat,
+        GPSLongitude: gps.lng,
+        GPSLatitudeRef: gps.lat >= 0 ? 'N' : 'S',
+        GPSLongitudeRef: gps.lng >= 0 ? 'E' : 'W',
+        ObjectName: headline,
+        Headline: headline,
+        CaptionAbstract: url,
+        City: city,
+        Byline: artist,
+        CopyrightNotice: copyright,
+        Source: 'PHOENIX HOME REMODELING',
+        Credit: 'PHOENIX HOME REMODELING',
+        WriterEditor: 'PHOENIX HOME REMODELING',
+        CountryPrimaryLocationName: 'UNITED STATES',
+        ProvinceState: 'ARIZONA',
+        SubLocation: rightsCity,
+        XMP: '',
+      };
+    }
+
+    async function processFiles() {
+      const issues = validateInputs();
+      if (issues.length) {
+        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
+        return;
+      }
+
+      state.batchDate = null;
+      state.processed = [];
+
+      const baseCoordinates = getBaseCoordinates();
+      const makes = readLines(els.cameraMakes.value);
+      const models = readLines(els.cameraModels.value);
+      if (!makes.length || !models.length) {
+        setStatus('warn', 'Add at least one camera make and one camera model.');
+        return;
+      }
+
+      setStatus('info', `Processing ${state.files.length} image(s). This runs in your browser and may take a moment for larger files.`);
+
+      for (let i = 0; i < state.files.length; i++) {
+        const entry = state.files[i];
+        try {
+          const fileDate = pickDate();
+          const make = makes[i % makes.length] || sample(makes);
+          const model = sample(models);
+          const gps = jitterCoordinate(baseCoordinates.lat, baseCoordinates.lng);
+          const tags = buildTagMap(fileDate, make, model, gps);
+          const result = await writeMetadata(entry.file, tags, {
+            args: ['-overwrite_original']
+          });
+
+          if (!result.success) {
+            throw new Error(result.error || 'Unknown metadata write error.');
+          }
+
+          const blob = new Blob([result.data], { type: 'image/jpeg' });
+          const name = buildOutputName(entry.file.name, i);
+          entry.processedBlob = blob;
+          entry.processedName = name;
+          entry.lastMessage = `Done • ${ymdDate(fileDate)} • ${make} / ${model} • ${gps.lat}, ${gps.lng}`;
+          state.processed.push({ name, blob });
+          renderFiles();
+        } catch (error) {
+          entry.lastMessage = `Failed: ${error.message}`;
+          renderFiles();
+        }
+      }
+
+      const failures = state.files.filter(f => !f.processedBlob).length;
+      if (failures) {
+        setStatus('warn', `Finished with ${failures} failure(s). Check the file rows for details.`);
+      } else {
+        setStatus('ok', `Finished. ${state.processed.length} image(s) processed. Use Download processed set (.zip) to save the batch.`);
+      }
+    }
+
+    async function downloadZip() {
+      if (!state.processed.length) {
+        setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.');
+        return;
+      }
+      const zip = new JSZip();
+      state.processed.forEach(item => zip.file(item.name, item.blob));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      const city = titleCase(els.city.value.trim()) || 'batch';
+      const workflow = els.workflowType.value;
+      a.href = URL.createObjectURL(blob);
+      a.download = sanitizeFileName(`PHR-${workflow}-${city}-exif-images.zip`);
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function clearFiles() {
+      state.files.forEach(entry => URL.revokeObjectURL(entry.previewUrl));
+      state.files = [];
+      state.processed = [];
+      state.batchDate = null;
+      renderFiles();
+      setStatus('info', 'Files cleared.');
+    }
+
+    function loadDemoValues() {
+      els.workflowType.value = 'city-paa';
+      els.primaryKeyword.value = 'kitchen remodeling contractor in Chandler';
+      els.service.value = 'kitchen remodeling';
+      els.city.value = 'Chandler';
+      els.zipCode.value = '85226';
+      els.targetUrl.value = 'https://phxhomeremodeling.com/chandler-kitchen-remodeling/';
+      els.paaText.value = 'Who is the best kitchen remodeling contractor in Chandler';
+      els.artist.value = 'Phoenix Home Remodeling';
+      els.copyrightYear.value = '2026';
+      els.userComment.value = 'Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205';
+      els.rightsCityUpper.value = 'CHANDLER';
+      els.dateMode.value = 'same-random';
+      els.yearRange.value = '2025-2026';
+      computeMetadataPreview();
+      setStatus('info', 'Demo values loaded.');
+    }
+
+    $('refreshPreviewBtn').addEventListener('click', computeMetadataPreview);
+    $('validateBtn').addEventListener('click', () => {
+      const issues = validateInputs();
+      if (issues.length) {
+        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
+      } else {
+        setStatus('ok', 'Validation passed.');
+      }
+      computeMetadataPreview();
+    });
+    $('processBtn').addEventListener('click', processFiles);
+    $('downloadZipBtn').addEventListener('click', downloadZip);
+    $('clearFilesBtn').addEventListener('click', clearFiles);
+    $('loadDemoBtn').addEventListener('click', loadDemoValues);
+    els.fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+
+    ;[
+      'workflowType','primaryKeyword','service','city','zipCode','targetUrl','paaText',
+      'artist','copyrightYear','userComment','rightsCityUpper','cameraMakes',
+      'cameraModels','dateMode','manualDate','yearRange','zipLookup','filenameConfig'
+    ].forEach(id => $(id).addEventListener('input', computeMetadataPreview));
+
+    els.dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      els.dropzone.classList.add('drag');
+    });
+    els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
+    els.dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      els.dropzone.classList.remove('drag');
+      addFiles(e.dataTransfer.files);
+    });
+
+    computeMetadataPreview();
+    renderFiles();
+  </script>
+</body>
+</html>
