@@ -108,7 +108,7 @@
     .field-grid.full > * { grid-column: 1 / -1; }
 
     @media (max-width: 780px) {
-      .field-grid, .field-grid.three, .split { grid-template-columns: 1fr; }
+      .field-grid, .field-grid.three { grid-template-columns: 1fr; }
     }
 
     label {
@@ -127,11 +127,6 @@
       background: #0f172a;
       color: var(--text);
       outline: none;
-    }
-
-    input[readonly] {
-      opacity: .85;
-      cursor: not-allowed;
     }
 
     textarea {
@@ -282,6 +277,18 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+
+    @media (max-width: 780px) {
+      .split { grid-template-columns: 1fr; }
+    }
+
+    code.inline {
+      background: #101827;
+      border: 1px solid #23324e;
+      border-radius: 8px;
+      padding: 3px 7px;
+      color: #d6e3ff;
+    }
   </style>
 </head>
 <body>
@@ -289,9 +296,9 @@
     <section class="hero">
       <div class="title-row">
         <div>
-          <div class="badge">Phoenix Home Remodeling • Strict SOP Mode</div>
+          <div class="badge">Phoenix Home Remodeling • SEO Neo SOP</div>
           <h1>EXIF + IPTC batch editor</h1>
-          <p>Client-side image metadata tool for PAA images and video thumbnails. PNG files are converted to JPG first. Processing is blocked when SOP requirements are not met.</p>
+          <p>Client-side image metadata tool for PAA images and video thumbnails. No images are uploaded to a server. Process files in the browser, then download the edited copies.</p>
         </div>
         <div class="row">
           <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
@@ -307,7 +314,7 @@
         <div class="section-title">
           <div>
             <h2>Template + SOP fields</h2>
-            <p>Strict mode blocks placeholders, wrong file counts, bad URLs, non-uppercase rights city, and older phone models.</p>
+            <p>Anything in uppercase in your SOP is surfaced here so it is harder to miss.</p>
           </div>
         </div>
 
@@ -352,7 +359,7 @@
         <div class="field-grid">
           <label>
             Company / Artist
-            <input id="artist" value="Phoenix Home Remodeling" readonly />
+            <input id="artist" value="Phoenix Home Remodeling" />
           </label>
           <label>
             Copyright year
@@ -360,7 +367,7 @@
           </label>
           <label>
             User comment
-            <input id="userComment" value="Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205" readonly />
+            <input id="userComment" value="Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205" />
           </label>
           <label>
             Uppercase IPTC rights city
@@ -377,19 +384,28 @@ Google</textarea>
             <div class="hint">One per line. The app rotates brands for variety.</div>
           </label>
           <label>
-            Camera models pool (2020+ only)
-            <textarea id="cameraModels">iPhone 12
+            Camera models pool
+            <textarea id="cameraModels">iPhone 8
+iPhone X
+iPhone 11
+iPhone 12
 iPhone 13
 iPhone 14
 iPhone 15 Pro
+Galaxy S8
+Galaxy S9
+Galaxy S10
 Galaxy S21
 Galaxy S22
 Galaxy S23
 Galaxy S24
+Pixel 3
+Pixel 4
+Pixel 5
 Pixel 6
 Pixel 7
 Pixel 8 Pro</textarea>
-            <div class="hint">One per line. Only 2020+ devices are allowed.</div>
+            <div class="hint">One per line. 2015+ devices are allowed. A random model is paired for each output image.</div>
           </label>
         </div>
 
@@ -436,7 +452,7 @@ Pixel 8 Pro</textarea>
   "85282": { "city": "Tempe", "lat": 33.3901, "lng": -111.9282 },
   "85283": { "city": "Tempe", "lat": 33.3661, "lng": -111.9258 }
 }</textarea>
-            <div class="hint">Paste your full ZIP list from the sheet later.</div>
+            <div class="hint">Paste your own ZIP list from the sheet later. The app adds slight jitter so city-specific images do not reuse identical coordinates.</div>
           </label>
           <label>
             Output plan / filename helper (JSON)
@@ -446,7 +462,7 @@ Pixel 8 Pro</textarea>
   "thumbnailTemplate": "Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling",
   "thumbnailSuffixes": ["Company", "Contractor"]
 }</textarea>
-            <div class="hint">PAA files use the strict format: [PAA] - Phoenix Home Remodeling.jpg</div>
+            <div class="hint">This is optional. It is used for the helper preview and batch naming suggestions.</div>
           </label>
         </div>
 
@@ -461,7 +477,7 @@ Pixel 8 Pro</textarea>
             <div><strong>Copyright:</strong> <span id="previewCopyright" class="mono"></span></div>
             <div><strong>Rights city:</strong> <span id="previewRightsCity" class="mono"></span></div>
             <div><strong>GPS sample:</strong> <span id="previewGps" class="mono"></span></div>
-            <div><strong>Sample filename:</strong> <span id="previewFilename" class="mono"></span></div>
+            <div><strong>Sample thumbnail filename:</strong> <span id="previewFilename" class="mono"></span></div>
           </div>
         </div>
       </section>
@@ -470,18 +486,18 @@ Pixel 8 Pro</textarea>
         <div class="section-title">
           <div>
             <h2>Images</h2>
-            <p>Add JPG, JPEG, or PNG files. PNG files are converted to JPG before metadata is written.</p>
+            <p>Add JPG or JPEG files for the batch. Best results are on JPEG images because EXIF/IPTC writing is most consistent there.</p>
           </div>
         </div>
 
         <div id="dropzone" class="dropzone">
-          <strong>Drop image files here</strong>
+          <strong>Drop JPG files here</strong>
           <p>or</p>
           <label class="btn secondary" style="display:inline-block;">
             Choose images
             <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg,image/png,.png" multiple hidden />
           </label>
-          <div class="hint" style="margin-top:12px;">PAA mode requires exactly 6 images. Video thumbnail mode requires exactly 2 images.</div>
+          <div class="hint" style="margin-top:12px;">For the 6 PAA images, load all 6 at once. For video thumbnails, load the 2 thumbnail images together.</div>
         </div>
 
         <div class="row" style="margin-top:14px;">
@@ -494,16 +510,15 @@ Pixel 8 Pro</textarea>
         <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
           <h3>SOP checklist</h3>
           <div class="checklist" id="checklistBox">
-            <div>Artist and User Comment are locked to the SOP values.</div>
-            <div>PAA workflow requires 6 images. Video thumbnail workflow requires 2 images.</div>
-            <div>Target URL must use phxhomeremodeling.com.</div>
-            <div>Rights city must be uppercase.</div>
-            <div>Only 2020+ phone models are allowed.</div>
-            <div>Placeholder text like PRIMARY KEYWORD or CITY will block processing.</div>
+            <div>Advanced mode is baked into this app. No extra click needed.</div>
+            <div>Camera make and model are varied for uniqueness.</div>
+            <div>EXIF dates are overwritten according to the selected batch rule.</div>
+            <div>Artist, copyright, comment, headline, caption, city, and GPS are all generated from the form.</div>
+            <div>Use <span class="mono">Validate inputs</span> before running so uppercase fields and URLs are checked.</div>
           </div>
         </div>
 
-        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and send the completion message manually.</p>
+        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually. Those steps can be automated later with Apps Script or a webhook.</p>
       </section>
     </div>
   </div>
@@ -551,17 +566,13 @@ Pixel 8 Pro</textarea>
       dropzone: $('dropzone'),
     };
 
-    const LOCKED_ARTIST = 'Phoenix Home Remodeling';
-    const LOCKED_COMMENT = 'Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205';
-    const PLACEHOLDER_TERMS = ['PRIMARY KEYWORD', 'CITY', 'SERVICE', 'ZIP CODE', 'ZIPCODE', 'URL', 'KEYWORD'];
-
     function setStatus(type, message) {
       els.globalStatus.className = `status ${type}`;
       els.globalStatus.textContent = message;
     }
 
     function readLines(value) {
-      return String(value || '')
+      return value
         .split(/\r?\n/)
         .map(v => v.trim())
         .filter(Boolean);
@@ -586,7 +597,21 @@ Pixel 8 Pro</textarea>
     }
 
     function sanitizeFileName(name) {
-      return String(name || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+      return name.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function degToDmsRational(deg) {
+      const absolute = Math.abs(deg);
+      const d = Math.floor(absolute);
+      const minFloat = (absolute - d) * 60;
+      const m = Math.floor(minFloat);
+      const secFloat = (minFloat - m) * 60;
+      const s = Math.round(secFloat * 100);
+      return [
+        [d, 1],
+        [m, 1],
+        [s, 100]
+      ];
     }
 
     function exifDateTime(date) {
@@ -606,6 +631,22 @@ Pixel 8 Pro</textarea>
       return `${y}-${m}-${d}`;
     }
 
+    function pickDate() {
+      const mode = els.dateMode.value;
+      if (mode === 'same-manual') {
+        const raw = els.manualDate.value;
+        if (!raw) throw new Error('Manual date is required when date mode is set to manual.');
+        return new Date(`${raw}T12:00:00`);
+      }
+
+      if (mode === 'same-random') {
+        if (!state.batchDate) state.batchDate = randomDateFromRange(els.yearRange.value);
+        return state.batchDate;
+      }
+
+      return randomDateFromRange(els.yearRange.value);
+    }
+
     function randomDateFromRange(rangeText) {
       const match = String(rangeText || '').trim().match(/^(\d{4})\s*-\s*(\d{4})$/);
       let startYear = 2025;
@@ -620,20 +661,6 @@ Pixel 8 Pro</textarea>
       return new Date(start + Math.random() * (end - start));
     }
 
-    function pickDate() {
-      const mode = els.dateMode.value;
-      if (mode === 'same-manual') {
-        const raw = els.manualDate.value;
-        if (!raw) throw new Error('Manual date is required when date mode is set to manual.');
-        return new Date(`${raw}T12:00:00`);
-      }
-      if (mode === 'same-random') {
-        if (!state.batchDate) state.batchDate = randomDateFromRange(els.yearRange.value);
-        return state.batchDate;
-      }
-      return randomDateFromRange(els.yearRange.value);
-    }
-
     function getZipLookup() {
       return safeJsonParse(els.zipLookup.value, {});
     }
@@ -645,7 +672,8 @@ Pixel 8 Pro</textarea>
     function getBaseCoordinates() {
       const lookup = getZipLookup();
       const zip = (els.zipCode.value || '').trim();
-      return lookup[zip] || null;
+      if (lookup[zip]) return lookup[zip];
+      return null;
     }
 
     function jitterCoordinate(lat, lng) {
@@ -657,45 +685,7 @@ Pixel 8 Pro</textarea>
       };
     }
 
-    function normalizeLockedFields() {
-      els.artist.value = LOCKED_ARTIST;
-      els.userComment.value = LOCKED_COMMENT;
-      els.rightsCityUpper.value = String(els.rightsCityUpper.value || '').trim().toUpperCase();
-    }
-
-    function containsPlaceholders(text) {
-      const upper = String(text || '').toUpperCase();
-      return PLACEHOLDER_TERMS.some(term => upper.includes(term));
-    }
-
-    function buildHeadline() {
-      const paa = els.paaText.value.trim();
-      if (!paa) return '';
-      if (/phoenix home remodeling/i.test(paa)) return paa;
-      return `${paa} | Phoenix Home Remodeling`;
-    }
-
-    function buildCopyright() {
-      const year = (els.copyrightYear.value || '2026').trim();
-      const keyword = (els.primaryKeyword.value || els.paaText.value || '').trim();
-      return `${year} ${keyword} - Phoenix Home Remodeling`;
-    }
-
-    function buildSampleFilename(paaText, cityText) {
-      const config = getFilenameConfig();
-      if (els.workflowType.value !== 'video-thumbnail') {
-        return sanitizeFileName(`${paaText || 'PAA image'} - Phoenix Home Remodeling.jpg`);
-      }
-      const service = titleCase(els.service.value.trim());
-      const city = titleCase(cityText || els.city.value.trim());
-      const tpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
-      const suffix = (config.thumbnailSuffixes && config.thumbnailSuffixes[0]) || 'Company';
-      const body = tpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
-      return sanitizeFileName(`${config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - '}${body}.jpg`);
-    }
-
     function computeMetadataPreview() {
-      normalizeLockedFields();
       const city = titleCase(els.city.value.trim());
       const rightsCity = (els.rightsCityUpper.value || city.toUpperCase()).trim();
       const paa = els.paaText.value.trim();
@@ -713,9 +703,34 @@ Pixel 8 Pro</textarea>
       els.previewFilename.textContent = buildSampleFilename(paa, city) || '—';
     }
 
+    function buildHeadline() {
+      const paa = els.paaText.value.trim();
+      if (!paa) return '';
+      if (/phoenix home remodeling/i.test(paa)) return paa;
+      return `${paa} | Phoenix Home Remodeling`;
+    }
+
+    function buildCopyright() {
+      const year = (els.copyrightYear.value || '2026').trim();
+      const keyword = (els.primaryKeyword.value || els.paaText.value || '').trim();
+      return `${year} ${keyword} - Phoenix Home Remodeling`;
+    }
+
+    function buildSampleFilename(paaText, cityText) {
+      const config = getFilenameConfig();
+      if (els.workflowType.value !== 'video-thumbnail') return sanitizeFileName(`${paaText || 'PAA image'} - Phoenix Home Remodeling.jpg`);
+      const service = titleCase(els.service.value.trim());
+      const city = titleCase(cityText || els.city.value.trim());
+      const tpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
+      const suffix = (config.thumbnailSuffixes && config.thumbnailSuffixes[0]) || 'Company';
+      const body = tpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
+      return sanitizeFileName(`${config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - '}${body}.jpg`);
+    }
+
     function validateInputs() {
-      normalizeLockedFields();
       const issues = [];
+
+      // STRICT MODE ENABLED (2015+ devices allowed)
 
       const required = [
         ['Primary keyword', els.primaryKeyword.value],
@@ -732,15 +747,11 @@ Pixel 8 Pro</textarea>
         if (!String(value || '').trim()) issues.push(`${label} is required.`);
       }
 
-      const url = String(els.targetUrl.value || '').trim();
-      if (!/^https?:\/\//i.test(url)) {
+      if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) {
         issues.push('Target URL must start with http:// or https://');
       }
-      if (!url.toLowerCase().includes('phxhomeremodeling.com')) {
-        issues.push('Target URL must be on phxhomeremodeling.com');
-      }
 
-      const rightsCity = String(els.rightsCityUpper.value || '').trim();
+      const rightsCity = (els.rightsCityUpper.value || '').trim();
       if (!rightsCity) {
         issues.push('Uppercase IPTC rights city is required.');
       } else if (rightsCity !== rightsCity.toUpperCase()) {
@@ -751,42 +762,17 @@ Pixel 8 Pro</textarea>
       if (!/^\d{4}\s/.test(copy)) {
         issues.push('Copyright year should start with a 4-digit year.');
       }
-      if (!String(copy).endsWith('Phoenix Home Remodeling')) {
-        issues.push('Copyright must end with Phoenix Home Remodeling.');
-      }
-
-      if (String(els.artist.value || '').trim() !== LOCKED_ARTIST) {
-        issues.push('Artist must be exactly Phoenix Home Remodeling.');
-      }
-      if (String(els.userComment.value || '').trim() !== LOCKED_COMMENT) {
-        issues.push('User comment must match the SOP standard text exactly.');
-      }
-
-      const joinedText = [
-        els.primaryKeyword.value,
-        els.service.value,
-        els.city.value,
-        els.targetUrl.value,
-        els.paaText.value,
-        buildHeadline(),
-        buildCopyright(),
-        els.rightsCityUpper.value
-      ].join(' | ');
-
-      if (containsPlaceholders(joinedText)) {
-        issues.push('Remove all placeholder text before processing.');
-      }
 
       const zipLookup = getZipLookup();
-      const zip = String(els.zipCode.value || '').trim();
-      if (!zipLookup[zip]) {
-        issues.push('ZIP code was not found in the ZIP lookup JSON.');
+      if (!zipLookup[(els.zipCode.value || '').trim()]) {
+        issues.push('ZIP code was not found in the ZIP → coordinates JSON lookup. Paste the correct ZIP mapping first.');
       }
 
       if (!state.files.length) {
         issues.push('Add images before processing.');
       }
 
+      // FILE COUNT RULES
       if (els.workflowType.value === 'video-thumbnail' && state.files.length !== 2) {
         issues.push('Video thumbnail workflow requires exactly 2 images.');
       }
@@ -800,22 +786,18 @@ Pixel 8 Pro</textarea>
 
       const models = readLines(els.cameraModels.value).map(v => v.toLowerCase());
       const bannedStarts = [
-        'iphone 1', 'iphone 2', 'iphone 3', 'iphone 4', 'iphone 5',
-        'iphone 6', 'iphone 7', 'iphone 8', 'iphone 9', 'iphone 10', 'iphone 11',
-        'galaxy s1', 'galaxy s2', 'galaxy s3', 'galaxy s4', 'galaxy s5',
-        'galaxy s6', 'galaxy s7', 'galaxy s8', 'galaxy s9', 'galaxy s10',
-        'galaxy s11', 'galaxy s12',
-        'pixel 1', 'pixel 2', 'pixel 3', 'pixel 4', 'pixel 5'
+        'iphone 1', 'iphone 2', 'iphone 3', 'iphone 4', 'iphone 5', 'iphone 6',
+        'galaxy s1', 'galaxy s2', 'galaxy s3', 'galaxy s4', 'galaxy s5', 'galaxy s6', 'galaxy s7',
+        'pixel 1', 'pixel 2'
       ];
-
       for (const model of models) {
         if (bannedStarts.some(prefix => model.startsWith(prefix))) {
-          issues.push('Only 2020+ phone models are allowed. Remove older devices.');
+          issues.push('Only 2015+ phone models are allowed. Remove older devices.');
           break;
         }
       }
 
-      return [...new Set(issues)];
+      return issues;
     }
 
     function renderFiles() {
@@ -845,7 +827,6 @@ Pixel 8 Pro</textarea>
 
         const actions = document.createElement('div');
         actions.className = 'row';
-
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn danger';
         removeBtn.textContent = 'Remove';
@@ -905,6 +886,7 @@ Pixel 8 Pro</textarea>
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
 
+      // white background to avoid transparency issues
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
@@ -937,6 +919,7 @@ Pixel 8 Pro</textarea>
     }
 
     function buildOutputName(originalName, fileIndex) {
+      const baseName = originalName.replace(/\.[^.]+$/, '');
       const ext = '.jpg';
       const workflow = els.workflowType.value;
       const city = titleCase(els.city.value.trim());
@@ -947,9 +930,7 @@ Pixel 8 Pro</textarea>
       if (workflow === 'video-thumbnail') {
         const suffixes = Array.isArray(config.thumbnailSuffixes) && config.thumbnailSuffixes.length ? config.thumbnailSuffixes : ['Company', 'Contractor'];
         const suffix = suffixes[fileIndex % suffixes.length];
-        const orientation = fileIndex % 2 === 0
-          ? (config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - ')
-          : (config.videoThumbnailPortraitPrefix || 'Portrait Thumbnail - ');
+        const orientation = fileIndex % 2 === 0 ? (config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - ') : (config.videoThumbnailPortraitPrefix || 'Portrait Thumbnail - ');
         const bodyTpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
         const body = bodyTpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
         return sanitizeFileName(`${orientation}${body}${ext}`);
@@ -964,8 +945,8 @@ Pixel 8 Pro</textarea>
       const headline = buildHeadline();
       const copyright = buildCopyright();
       const url = els.targetUrl.value.trim();
-      const artist = LOCKED_ARTIST;
-      const comment = LOCKED_COMMENT;
+      const artist = els.artist.value.trim();
+      const comment = els.userComment.value.trim();
       const dt = exifDateTime(date);
 
       return {
@@ -1014,7 +995,6 @@ Pixel 8 Pro</textarea>
       const baseCoordinates = getBaseCoordinates();
       const makes = readLines(els.cameraMakes.value);
       const models = readLines(els.cameraModels.value);
-
       if (!makes.length || !models.length) {
         setStatus('warn', 'Add at least one camera make and one camera model.');
         return;
@@ -1093,11 +1073,12 @@ Pixel 8 Pro</textarea>
       els.zipCode.value = '85226';
       els.targetUrl.value = 'https://phxhomeremodeling.com/chandler-kitchen-remodeling/';
       els.paaText.value = 'Who is the best kitchen remodeling contractor in Chandler';
-      els.rightsCityUpper.value = 'CHANDLER';
+      els.artist.value = 'Phoenix Home Remodeling';
       els.copyrightYear.value = '2026';
+      els.userComment.value = 'Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205';
+      els.rightsCityUpper.value = 'CHANDLER';
       els.dateMode.value = 'same-random';
       els.yearRange.value = '2025-2026';
-      normalizeLockedFields();
       computeMetadataPreview();
       setStatus('info', 'Demo values loaded.');
     }
@@ -1120,8 +1101,8 @@ Pixel 8 Pro</textarea>
 
     ;[
       'workflowType','primaryKeyword','service','city','zipCode','targetUrl','paaText',
-      'copyrightYear','rightsCityUpper','cameraMakes','cameraModels','dateMode',
-      'manualDate','yearRange','zipLookup','filenameConfig'
+      'artist','copyrightYear','userComment','rightsCityUpper','cameraMakes',
+      'cameraModels','dateMode','manualDate','yearRange','zipLookup','filenameConfig'
     ].forEach(id => $(id).addEventListener('input', computeMetadataPreview));
 
     els.dropzone.addEventListener('dragover', (e) => {
@@ -1135,7 +1116,6 @@ Pixel 8 Pro</textarea>
       addFiles(e.dataTransfer.files);
     });
 
-    normalizeLockedFields();
     computeMetadataPreview();
     renderFiles();
   </script>
