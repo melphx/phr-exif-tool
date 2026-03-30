@@ -105,7 +105,9 @@
       gap: 12px;
     }
 
-    .field-grid.full > * { grid-column: 1 / -1; }
+    .field-grid.full > * {
+      grid-column: 1 / -1;
+    }
 
     @media (max-width: 780px) {
       .field-grid { grid-template-columns: 1fr; }
@@ -119,7 +121,7 @@
       color: #dbe7ff;
     }
 
-    input, textarea, select {
+    input, select, button, textarea {
       width: 100%;
       padding: 12px 14px;
       border-radius: 12px;
@@ -127,16 +129,10 @@
       background: #0f172a;
       color: var(--text);
       outline: none;
+      font: inherit;
     }
 
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 12px;
-    }
-
-    input:focus, textarea:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(118, 169, 255, .18);
     }
@@ -154,6 +150,10 @@
       align-items: center;
     }
 
+    .row > * {
+      width: auto;
+    }
+
     .btn {
       cursor: pointer;
       border: 0;
@@ -162,6 +162,7 @@
       font-weight: 700;
       color: #08111f;
       background: linear-gradient(180deg, #a7c5ff 0%, #76a9ff 100%);
+      width: auto;
     }
 
     .btn.secondary {
@@ -232,7 +233,9 @@
       gap: 6px;
     }
 
-    .meta small { color: var(--muted); }
+    .meta small {
+      color: var(--muted);
+    }
 
     .pill-row {
       display: flex;
@@ -315,7 +318,7 @@
         <div>
           <div class="badge">Phoenix Home Remodeling • Enterprise Mode</div>
           <h1>EXIF + IPTC batch editor</h1>
-          <p>Filename is the source of truth. Service and city are auto-detected from filenames using your approved service list. Workflow selection is back for easier QA.</p>
+          <p>Filename is the source of truth. Headline is automatically branded, and city/service are detected from the filename.</p>
         </div>
         <div class="row">
           <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
@@ -332,7 +335,7 @@
         <div class="section-title">
           <div>
             <h2>Batch settings</h2>
-            <p>Only the essentials stay visible. City, service, device, GPS, and date are now automatic.</p>
+            <p>Workflow dropdown kept. Everything else important is derived automatically from the filename.</p>
           </div>
         </div>
 
@@ -353,14 +356,6 @@
             Target URL
             <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
           </label>
-        </div>
-
-        <div class="checklist" style="margin-top:14px;">
-          <div><strong>Auto city detection:</strong> from filename</div>
-          <div><strong>Auto service detection:</strong> from approved service list</div>
-          <div><strong>Auto EXIF device:</strong> random approved device</div>
-          <div><strong>Auto EXIF date:</strong> random within last 2 years</div>
-          <div><strong>Auto GPS:</strong> random Phoenix service-area coordinates</div>
         </div>
 
         <textarea id="zipLookup" class="hidden">{
@@ -426,11 +421,6 @@
 
         <div id="filesContainer" class="files"></div>
 
-        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
-          <h3>Approved service list</h3>
-          <div class="checklist" id="serviceListBox"></div>
-        </div>
-
         <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually.</p>
       </section>
     </div>
@@ -488,8 +478,7 @@
       previewCopyright: $('previewCopyright'),
       previewGps: $('previewGps'),
       previewFilename: $('previewFilename'),
-      dropzone: $('dropzone'),
-      serviceListBox: $('serviceListBox')
+      dropzone: $('dropzone')
     };
 
     function setStatus(type, message) {
@@ -507,12 +496,6 @@
 
     function sample(arr) {
       return arr[Math.floor(Math.random() * arr.length)] || '';
-    }
-
-    function titleCase(text) {
-      return String(text || '')
-        .toLowerCase()
-        .replace(/\b\w/g, c => c.toUpperCase());
     }
 
     function sanitizeFileName(name) {
@@ -542,6 +525,12 @@
       return cleanName(fileName);
     }
 
+    function buildHeadline(fileName) {
+      const base = getHeadlineFromFilename(fileName);
+      const branded = `${base} | Phoenix Home Remodeling`;
+      return branded.length <= 256 ? branded : base;
+    }
+
     function getImageType(fileName) {
       const name = normalizeForMatch(fileName);
       if (name.includes('thumbnail')) return 'thumbnail';
@@ -565,7 +554,11 @@
 
       for (const city of cities) {
         const cityNorm = normalizeForMatch(city);
-        if (normalized.includes(` in ${cityNorm}`) || normalized.includes(` ${cityNorm} `) || normalized.endsWith(` ${cityNorm}`)) {
+        if (
+          normalized.includes(` in ${cityNorm}`) ||
+          normalized.includes(` ${cityNorm} `) ||
+          normalized.endsWith(` ${cityNorm}`)
+        ) {
           return city;
         }
       }
@@ -575,26 +568,42 @@
 
     function getServiceFromFile(fileName) {
       const normalized = normalizeForMatch(fileName);
+
+      const aliasMap = [
+        { match: 'bathroom remodeler', service: 'bathroom remodeling' },
+        { match: 'kitchen remodeler', service: 'kitchen remodeling' },
+        { match: 'shower remodeler', service: 'shower remodeling' },
+        { match: 'home remodeler', service: 'home remodeling' },
+        { match: 'laundry room remodeler', service: 'laundry room remodeling' },
+        { match: 'living room remodeler', service: 'living room remodel' },
+        { match: 'entertainment wall remodeler', service: 'entertainment wall remodel' },
+        { match: 'bathroom remodeler company', service: 'bathroom remodeling' },
+        { match: 'kitchen remodeler company', service: 'kitchen remodeling' },
+        { match: 'shower remodeler company', service: 'shower remodeling' },
+        { match: 'home remodeler company', service: 'home remodeling' }
+      ];
+
+      for (const item of aliasMap) {
+        if (normalized.includes(item.match)) return item.service;
+      }
+
       const sorted = [...APPROVED_SERVICES].sort((a, b) => b.length - a.length);
 
       for (const service of sorted) {
         const serviceNorm = normalizeForMatch(service);
         if (normalized.includes(serviceNorm)) {
-          return service === 'kitchen and bath renovatioin' ? 'kitchen and bath renovation' : service;
+          return service === 'kitchen and bath renovatioin'
+            ? 'kitchen and bath renovation'
+            : service;
         }
       }
 
       return '';
     }
 
-    function buildHeadline(fileName) {
-      return getHeadlineFromFilename(fileName);
-    }
-
     function buildCopyright(fileName) {
       const year = (els.copyrightYear.value || '2026').trim();
-      const keyword = getHeadlineFromFilename(fileName);
-      return `${year} ${keyword} - Phoenix Home Remodeling`;
+      return `${year} ${buildHeadline(fileName)}`;
     }
 
     function getRandomDevice() {
@@ -628,8 +637,8 @@
     function getRandomCoordsForCity(city) {
       const lookup = getZipLookup();
       const matches = Object.values(lookup).filter(v => normalizeForMatch(v.city) === normalizeForMatch(city));
-
       const base = matches.length ? sample(matches) : sample(Object.values(lookup));
+
       if (!base) return { lat: 33.4255, lng: -111.94 };
 
       return {
@@ -697,7 +706,6 @@
 
       if (workflow === 'video-thumbnail' && state.files.length) {
         const lowerNames = state.files.map(f => f.file.name.toLowerCase());
-
         const hasPortrait = lowerNames.some(n => n.includes('portrait'));
         const hasLandscape = lowerNames.some(n => n.includes('landscape'));
         const hasCompany = lowerNames.some(n => n.includes('company'));
@@ -732,15 +740,6 @@
       }
 
       return [...new Set(issues)];
-    }
-
-    function renderServicesList() {
-      els.serviceListBox.innerHTML = '';
-      for (const service of APPROVED_SERVICES) {
-        const div = document.createElement('div');
-        div.textContent = service === 'kitchen and bath renovatioin' ? 'kitchen and bath renovation' : service;
-        els.serviceListBox.appendChild(div);
-      }
     }
 
     function renderFiles() {
@@ -782,6 +781,16 @@
         const actions = document.createElement('div');
         actions.className = 'row';
 
+        const inspectBtn = document.createElement('button');
+        inspectBtn.className = 'btn secondary';
+        inspectBtn.textContent = 'Inspect';
+        inspectBtn.addEventListener('click', () => {
+          setStatus(
+            'info',
+            `Filename: ${entry.file.name}\nHeadline: ${buildHeadline(entry.file.name)}\nType: ${type}\nCity: ${city || 'not detected'}\nService: ${service || 'not detected'}\nProcessed file: ${entry.processedName || 'Not processed yet'}`
+          );
+        });
+
         const removeBtn = document.createElement('button');
         removeBtn.className = 'btn danger';
         removeBtn.textContent = 'Remove';
@@ -790,13 +799,6 @@
           state.files.splice(index, 1);
           renderFiles();
           computeMetadataPreview();
-        });
-
-        const inspectBtn = document.createElement('button');
-        inspectBtn.className = 'btn secondary';
-        inspectBtn.textContent = 'Inspect';
-        inspectBtn.addEventListener('click', () => {
-          setStatus('info', `Filename: ${entry.file.name}\nType: ${type}\nCity: ${city || 'not detected'}\nService: ${service || 'not detected'}\nProcessed file: ${entry.processedName || 'Not processed yet'}`);
         });
 
         actions.append(inspectBtn, removeBtn);
@@ -1027,7 +1029,7 @@
     $('loadDemoBtn').addEventListener('click', loadDemoValues);
     els.fileInput.addEventListener('change', (e) => addFiles(e.target.files));
 
-    ;['workflowType', 'targetUrl', 'copyrightYear'].forEach(id => {
+    ['workflowType', 'targetUrl', 'copyrightYear'].forEach(id => {
       $(id).addEventListener('input', computeMetadataPreview);
     });
 
@@ -1036,7 +1038,9 @@
       els.dropzone.classList.add('drag');
     });
 
-    els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
+    els.dropzone.addEventListener('dragleave', () => {
+      els.dropzone.classList.remove('drag');
+    });
 
     els.dropzone.addEventListener('drop', (e) => {
       e.preventDefault();
@@ -1044,7 +1048,6 @@
       addFiles(e.dataTransfer.files);
     });
 
-    renderServicesList();
     computeMetadataPreview();
     renderFiles();
   </script>
