@@ -1,202 +1,1052 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PHR EXIF Tool (Enterprise Mode)</title>
-
-<style>
-body { font-family: Arial; background:#0f172a; color:#fff; padding:20px;}
-input,button{padding:10px;margin:5px;border-radius:8px;border:none;}
-button{cursor:pointer;background:#4ade80;}
-.file{margin:10px 0;padding:10px;background:#1e293b;border-radius:8px;}
-</style>
-</head>
-
-<body>
-
-<h2>PHR EXIF TOOL (ENTERPRISE MODE)</h2>
-
-<input id="targetUrl" placeholder="Target URL"/>
-<br><br>
-
-<input type="file" id="fileInput" multiple accept="image/*"/>
-<br><br>
-
-<button onclick="process()">GO EXIFING</button>
-<button onclick="downloadZip()">Download ZIP</button>
-
-<div id="files"></div>
-
-<script type="module">
-import JSZip from "https://esm.sh/jszip";
-
-const FUNCTION_URL = "https://processimage-p5hobbg7wa-uc.a.run.app";
-
-let state = {
-  files: [],
-  processed: []
-};
-
-// ========= CORE LOGIC =========
-
-function clean(name){return name.replace(/\.[^/.]+$/,"");}
-
-function getCity(name){
-  const m = clean(name).match(/ in ([a-zA-Z\s]+)$/i);
-  return m ? m[1].trim() : "";
-}
-
-function getService(name){
-  const m = clean(name).match(/best (.+?) (contractor|company)/i);
-  return m ? m[1].trim() : "";
-}
-
-function getType(name){
-  name = name.toLowerCase();
-  if(name.includes("thumbnail")) return "thumbnail";
-  if(name.includes("who is")) return "paa";
-  return "unknown";
-}
-
-// ========= RANDOM =========
-
-const devices = [
-  {make:"Apple",model:"iPhone 13"},
-  {make:"Apple",model:"iPhone 15 Pro"},
-  {make:"Samsung",model:"Galaxy S23"},
-  {make:"Google",model:"Pixel 8"}
-];
-
-function randDevice(){return devices[Math.floor(Math.random()*devices.length)];}
-
-function randDate(){
-  const now=new Date();
-  const past=new Date();
-  past.setFullYear(now.getFullYear()-2);
-  return new Date(past.getTime()+Math.random()*(now-past));
-}
-
-function exifDate(d){
-  return `${d.getFullYear()}:${String(d.getMonth()+1).padStart(2,"0")}:${String(d.getDate()).padStart(2,"0")} 12:00:00`;
-}
-
-function randCoords(){
-  return {
-    lat:33.3+(Math.random()-0.5)*0.1,
-    lng:-111.9+(Math.random()-0.5)*0.1
-  };
-}
-
-// ========= FILE UI =========
-
-const fileInput = document.getElementById("fileInput");
-const filesDiv = document.getElementById("files");
-
-fileInput.onchange = e=>{
-  state.files = [...e.target.files];
-  render();
-};
-
-function render(){
-  filesDiv.innerHTML="";
-  state.files.forEach(f=>{
-    const city=getCity(f.name);
-    const service=getService(f.name);
-    const type=getType(f.name);
-
-    const div=document.createElement("div");
-    div.className="file";
-    div.innerHTML=`
-      <b>${f.name}</b><br>
-      Type: ${type}<br>
-      City: ${city || "❌"}<br>
-      Service: ${service || "❌"}
-    `;
-    filesDiv.appendChild(div);
-  });
-}
-
-// ========= PROCESS =========
-
-async function process(){
-  state.processed=[];
-
-  for(let file of state.files){
-
-    const city=getCity(file.name);
-    const service=getService(file.name);
-    const type=getType(file.name);
-
-    if(!city || type==="unknown"){
-      alert("Invalid file: "+file.name);
-      return;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phoenix Home Remodeling EXIF Tool</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --panel-2: #18233a;
+      --text: #e8eefc;
+      --muted: #9fb0d1;
+      --accent: #76a9ff;
+      --accent-2: #4ade80;
+      --danger: #fb7185;
+      --warning: #fbbf24;
+      --border: #2a3859;
+      --shadow: 0 12px 30px rgba(0,0,0,.22);
+      --radius: 16px;
     }
 
-    const device=randDevice();
-    const coords=randCoords();
-    const date=randDate();
+    * { box-sizing: border-box; }
 
-    const base64=await toBase64(file);
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #09101c 0%, #0f172a 100%);
+      color: var(--text);
+    }
 
-    const res=await fetch(FUNCTION_URL,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        imageBase64:base64,
-        fileName:file.name,
-        metadata:{
-          make:device.make,
-          model:device.model,
-          copyright:`2026 ${clean(file.name)} - Phoenix Home Remodeling`,
-          date:exifDate(date),
-          lat:coords.lat,
-          lng:coords.lng,
-          headline:clean(file.name),
-          url:document.getElementById("targetUrl").value,
-          city:city
+    .wrap {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1, h2, h3 { margin: 0 0 12px; }
+    p { color: var(--muted); line-height: 1.5; }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 24px;
+      background: rgba(18, 26, 43, .85);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #0f203f;
+      border: 1px solid #27457d;
+      color: #cfe0ff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr .95fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1080px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: rgba(18, 26, 43, .9);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .field-grid.full > * { grid-column: 1 / -1; }
+
+    @media (max-width: 780px) {
+      .field-grid { grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #dbe7ff;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(118, 169, 255, .18);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      color: #08111f;
+      background: linear-gradient(180deg, #a7c5ff 0%, #76a9ff 100%);
+    }
+
+    .btn.secondary {
+      background: #18233a;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn.success {
+      background: linear-gradient(180deg, #9df3be 0%, #4ade80 100%);
+      color: #062813;
+    }
+
+    .btn.warn {
+      background: linear-gradient(180deg, #fddf92 0%, #fbbf24 100%);
+      color: #271802;
+    }
+
+    .btn.danger {
+      background: linear-gradient(180deg, #fecdd3 0%, #fb7185 100%);
+      color: #33060c;
+    }
+
+    .dropzone {
+      border: 2px dashed #385281;
+      border-radius: 16px;
+      padding: 22px;
+      text-align: center;
+      background: rgba(15, 23, 42, .6);
+      transition: .18s ease;
+    }
+
+    .dropzone.drag {
+      border-color: var(--accent-2);
+      background: rgba(17, 46, 31, .25);
+    }
+
+    .files {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      max-height: 540px;
+      overflow: auto;
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      background: rgba(24, 35, 58, .72);
+    }
+
+    .thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid #2b4168;
+      background: #101827;
+    }
+
+    .meta {
+      display: grid;
+      gap: 6px;
+    }
+
+    .meta small { color: var(--muted); }
+
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #12213d;
+      border: 1px solid #2a4677;
+      color: #d7e5ff;
+    }
+
+    .pill.good {
+      background: #0d2b1d;
+      border-color: #1f7a44;
+      color: #d2fbe0;
+    }
+
+    .pill.bad {
+      background: #38111a;
+      border-color: #8d2942;
+      color: #ffd5dc;
+    }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      white-space: pre-wrap;
+    }
+
+    .status.info { background: #0f203f; color: #d9e7ff; border-color: #234270; }
+    .status.ok { background: #0b2f1c; color: #d2fbe0; border-color: #1f7a44; }
+    .status.warn { background: #33260a; color: #fdecc0; border-color: #8d6410; }
+    .status.err { background: #38111a; color: #ffd5dc; border-color: #8d2942; }
+
+    .checklist {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checklist div {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, .55);
+      color: #dde7fb;
+      font-size: 13px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="title-row">
+        <div>
+          <div class="badge">Phoenix Home Remodeling • Enterprise Mode</div>
+          <h1>EXIF + IPTC batch editor</h1>
+          <p>Filename is the source of truth. Service and city are auto-detected from filenames using your approved service list. Workflow selection is back for easier QA.</p>
+        </div>
+        <div class="row">
+          <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
+          <button class="btn warn" id="validateBtn">Validate inputs</button>
+          <button class="btn success" id="processBtn">GO EXIFING</button>
+          <button class="btn secondary" id="downloadZipBtn">Download processed set (.zip)</button>
+        </div>
+      </div>
+      <div id="globalStatus" class="status info">Ready. Add images, set the workflow, paste the target URL, validate, then click GO EXIFING.</div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Batch settings</h2>
+            <p>Only the essentials stay visible. City, service, device, GPS, and date are now automatic.</p>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            Workflow type
+            <select id="workflowType">
+              <option value="city-paa">City PAA (6 images)</option>
+              <option value="brand-paa">Brand PAA (6 images)</option>
+              <option value="video-thumbnail">Video Thumbnail (2 images)</option>
+            </select>
+          </label>
+          <label>
+            Copyright year
+            <input id="copyrightYear" value="2026" />
+          </label>
+          <label style="grid-column: 1 / -1;">
+            Target URL
+            <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
+          </label>
+        </div>
+
+        <div class="checklist" style="margin-top:14px;">
+          <div><strong>Auto city detection:</strong> from filename</div>
+          <div><strong>Auto service detection:</strong> from approved service list</div>
+          <div><strong>Auto EXIF device:</strong> random approved device</div>
+          <div><strong>Auto EXIF date:</strong> random within last 2 years</div>
+          <div><strong>Auto GPS:</strong> random Phoenix service-area coordinates</div>
+        </div>
+
+        <textarea id="zipLookup" class="hidden">{
+  "85226": { "city": "Chandler", "lat": 33.3072, "lng": -111.8910 },
+  "85224": { "city": "Chandler", "lat": 33.3277, "lng": -111.8755 },
+  "85225": { "city": "Chandler", "lat": 33.3062, "lng": -111.8315 },
+  "85286": { "city": "Chandler", "lat": 33.2767, "lng": -111.8425 },
+  "85295": { "city": "Gilbert", "lat": 33.3045, "lng": -111.7421 },
+  "85296": { "city": "Gilbert", "lat": 33.3201, "lng": -111.7361 },
+  "85297": { "city": "Gilbert", "lat": 33.2784, "lng": -111.7100 },
+  "85233": { "city": "Gilbert", "lat": 33.3645, "lng": -111.8081 },
+  "85044": { "city": "Phoenix", "lat": 33.3348, "lng": -111.9977 },
+  "85048": { "city": "Phoenix", "lat": 33.2942, "lng": -111.9823 },
+  "85202": { "city": "Mesa", "lat": 33.3790, "lng": -111.8757 },
+  "85204": { "city": "Mesa", "lat": 33.4011, "lng": -111.7852 },
+  "85206": { "city": "Mesa", "lat": 33.3964, "lng": -111.7189 },
+  "85210": { "city": "Mesa", "lat": 33.3897, "lng": -111.8446 },
+  "85212": { "city": "Mesa", "lat": 33.3300, "lng": -111.6347 },
+  "85213": { "city": "Mesa", "lat": 33.4373, "lng": -111.7708 },
+  "85281": { "city": "Tempe", "lat": 33.4255, "lng": -111.9400 },
+  "85282": { "city": "Tempe", "lat": 33.3901, "lng": -111.9282 },
+  "85283": { "city": "Tempe", "lat": 33.3661, "lng": -111.9258 }
+}</textarea>
+
+        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
+          <div class="section-title">
+            <h3>Computed preview</h3>
+            <button class="btn secondary" id="refreshPreviewBtn">Refresh preview</button>
+          </div>
+          <div class="checklist">
+            <div><strong>Derived headline:</strong> <span id="previewHeadline" class="mono"></span></div>
+            <div><strong>Derived city:</strong> <span id="previewCity" class="mono"></span></div>
+            <div><strong>Derived service:</strong> <span id="previewService" class="mono"></span></div>
+            <div><strong>Caption / URL:</strong> <span id="previewCaption" class="mono"></span></div>
+            <div><strong>Copyright:</strong> <span id="previewCopyright" class="mono"></span></div>
+            <div><strong>GPS sample:</strong> <span id="previewGps" class="mono"></span></div>
+            <div><strong>Sample output filename:</strong> <span id="previewFilename" class="mono"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Images</h2>
+            <p>Upload JPG, JPEG, or PNG files. PNG files are converted to JPG before processing.</p>
+          </div>
+        </div>
+
+        <div id="dropzone" class="dropzone">
+          <strong>Drop image files here</strong>
+          <p>or</p>
+          <label class="btn secondary" style="display:inline-block;">
+            Choose images
+            <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg,image/png,.png" multiple hidden />
+          </label>
+          <div class="hint" style="margin-top:12px;">City PAA / Brand PAA expects 6 images. Video Thumbnail expects 2 images.</div>
+        </div>
+
+        <div class="row" style="margin-top:14px;">
+          <button class="btn secondary" id="clearFilesBtn">Clear images</button>
+        </div>
+
+        <div id="filesContainer" class="files"></div>
+
+        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
+          <h3>Approved service list</h3>
+          <div class="checklist" id="serviceListBox"></div>
+        </div>
+
+        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually.</p>
+      </section>
+    </div>
+  </div>
+
+  <script type="module">
+    import JSZip from 'https://esm.sh/jszip@3.10.1';
+
+    const FUNCTION_URL = 'https://processimage-p5hobbg7wa-uc.a.run.app';
+
+    const APPROVED_SERVICES = [
+      'bathroom remodeling',
+      'kitchen remodeling',
+      'shower remodeling',
+      'home remodeling',
+      'laundry room remodeling',
+      'home improvement contractor',
+      'home remodel designer',
+      'kitchen and bath renovation',
+      'kitchen and bath renovatioin',
+      'general contractor',
+      'living room remodel',
+      'entertainment wall remodel'
+    ];
+
+    const DEVICES = [
+      { make: 'Apple', model: 'iPhone 11' },
+      { make: 'Apple', model: 'iPhone 13' },
+      { make: 'Apple', model: 'iPhone 15 Pro' },
+      { make: 'Samsung', model: 'Galaxy S21' },
+      { make: 'Samsung', model: 'Galaxy S23' },
+      { make: 'Google', model: 'Pixel 7' },
+      { make: 'Google', model: 'Pixel 8 Pro' }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      files: [],
+      processed: [],
+    };
+
+    const els = {
+      workflowType: $('workflowType'),
+      targetUrl: $('targetUrl'),
+      copyrightYear: $('copyrightYear'),
+      zipLookup: $('zipLookup'),
+      fileInput: $('fileInput'),
+      filesContainer: $('filesContainer'),
+      globalStatus: $('globalStatus'),
+      previewHeadline: $('previewHeadline'),
+      previewCity: $('previewCity'),
+      previewService: $('previewService'),
+      previewCaption: $('previewCaption'),
+      previewCopyright: $('previewCopyright'),
+      previewGps: $('previewGps'),
+      previewFilename: $('previewFilename'),
+      dropzone: $('dropzone'),
+      serviceListBox: $('serviceListBox')
+    };
+
+    function setStatus(type, message) {
+      els.globalStatus.className = `status ${type}`;
+      els.globalStatus.textContent = message;
+    }
+
+    function safeJsonParse(text, fallback) {
+      try {
+        return JSON.parse(text);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function sample(arr) {
+      return arr[Math.floor(Math.random() * arr.length)] || '';
+    }
+
+    function titleCase(text) {
+      return String(text || '')
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function sanitizeFileName(name) {
+      return String(name || '')
+        .replace(/[\\/:*?"<>|]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function stripExtension(fileName) {
+      return String(fileName || '').replace(/\.[^/.]+$/, '');
+    }
+
+    function cleanName(fileName) {
+      return stripExtension(fileName).replace(/^\d+-/, '').trim();
+    }
+
+    function normalizeForMatch(text) {
+      return String(text || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function getHeadlineFromFilename(fileName) {
+      return cleanName(fileName);
+    }
+
+    function getImageType(fileName) {
+      const name = normalizeForMatch(fileName);
+      if (name.includes('thumbnail')) return 'thumbnail';
+      if (name.includes('who is')) return 'paa';
+      return 'unknown';
+    }
+
+    function getZipLookup() {
+      return safeJsonParse(els.zipLookup.value, {});
+    }
+
+    function getKnownCities() {
+      const lookup = getZipLookup();
+      const cities = [...new Set(Object.values(lookup).map(v => v.city).filter(Boolean))];
+      return cities.sort((a, b) => b.length - a.length);
+    }
+
+    function getCityFromFile(fileName) {
+      const normalized = normalizeForMatch(fileName);
+      const cities = getKnownCities();
+
+      for (const city of cities) {
+        const cityNorm = normalizeForMatch(city);
+        if (normalized.includes(` in ${cityNorm}`) || normalized.includes(` ${cityNorm} `) || normalized.endsWith(` ${cityNorm}`)) {
+          return city;
         }
-      })
+      }
+
+      return '';
+    }
+
+    function getServiceFromFile(fileName) {
+      const normalized = normalizeForMatch(fileName);
+      const sorted = [...APPROVED_SERVICES].sort((a, b) => b.length - a.length);
+
+      for (const service of sorted) {
+        const serviceNorm = normalizeForMatch(service);
+        if (normalized.includes(serviceNorm)) {
+          return service === 'kitchen and bath renovatioin' ? 'kitchen and bath renovation' : service;
+        }
+      }
+
+      return '';
+    }
+
+    function buildHeadline(fileName) {
+      return getHeadlineFromFilename(fileName);
+    }
+
+    function buildCopyright(fileName) {
+      const year = (els.copyrightYear.value || '2026').trim();
+      const keyword = getHeadlineFromFilename(fileName);
+      return `${year} ${keyword} - Phoenix Home Remodeling`;
+    }
+
+    function getRandomDevice() {
+      return sample(DEVICES);
+    }
+
+    function getRandomDate() {
+      const now = new Date();
+      const past = new Date();
+      past.setFullYear(now.getFullYear() - 2);
+      return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
+    }
+
+    function exifDateTime(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const hh = String(Math.floor(Math.random() * 9) + 9).padStart(2, '0');
+      const mm = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+      const ss = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+      return `${y}:${m}:${d} ${hh}:${mm}:${ss}`;
+    }
+
+    function ymdDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getRandomCoordsForCity(city) {
+      const lookup = getZipLookup();
+      const matches = Object.values(lookup).filter(v => normalizeForMatch(v.city) === normalizeForMatch(city));
+
+      const base = matches.length ? sample(matches) : sample(Object.values(lookup));
+      if (!base) return { lat: 33.4255, lng: -111.94 };
+
+      return {
+        lat: +(base.lat + (Math.random() - 0.5) * 0.01).toFixed(6),
+        lng: +(base.lng + (Math.random() - 0.5) * 0.01).toFixed(6)
+      };
+    }
+
+    function getFirstUploadedFileName() {
+      return state.files.length ? state.files[0].file.name : '';
+    }
+
+    function getValidationStatus(fileName) {
+      const city = getCityFromFile(fileName);
+      const service = getServiceFromFile(fileName);
+      const type = getImageType(fileName);
+
+      if (!city) return { ok: false, msg: 'Missing city' };
+      if (type === 'paa' && !service) return { ok: false, msg: 'Missing service' };
+      if (type === 'unknown') return { ok: false, msg: 'Unknown format' };
+      return { ok: true, msg: 'VALID' };
+    }
+
+    function computeMetadataPreview() {
+      const previewFileName = getFirstUploadedFileName();
+      const headline = previewFileName ? buildHeadline(previewFileName) : 'Upload a file to preview';
+      const city = previewFileName ? getCityFromFile(previewFileName) : 'Upload a file to preview';
+      const service = previewFileName ? getServiceFromFile(previewFileName) : 'Upload a file to preview';
+      const copyright = previewFileName ? buildCopyright(previewFileName) : 'Upload a file to preview';
+      const caption = els.targetUrl.value.trim();
+      const coords = city && city !== 'Upload a file to preview' ? getRandomCoordsForCity(city) : null;
+
+      els.previewHeadline.textContent = headline || '—';
+      els.previewCity.textContent = city || '—';
+      els.previewService.textContent = service || '—';
+      els.previewCaption.textContent = caption || '—';
+      els.previewCopyright.textContent = copyright || '—';
+      els.previewGps.textContent = coords ? `${coords.lat}, ${coords.lng}` : 'Upload a file to preview';
+      els.previewFilename.textContent = previewFileName || 'Upload a file to preview';
+    }
+
+    function validateInputs() {
+      const issues = [];
+      const workflow = els.workflowType.value;
+
+      if (!els.targetUrl.value.trim()) {
+        issues.push('Target URL is required.');
+      }
+
+      if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) {
+        issues.push('Target URL must start with http:// or https://');
+      }
+
+      if (!state.files.length) {
+        issues.push('Add images before processing.');
+      }
+
+      if ((workflow === 'city-paa' || workflow === 'brand-paa') && state.files.length !== 6) {
+        issues.push(`This workflow requires exactly 6 images (found ${state.files.length}).`);
+      }
+
+      if (workflow === 'video-thumbnail' && state.files.length !== 2) {
+        issues.push(`This workflow requires exactly 2 images (found ${state.files.length}).`);
+      }
+
+      if (workflow === 'video-thumbnail' && state.files.length) {
+        const lowerNames = state.files.map(f => f.file.name.toLowerCase());
+
+        const hasPortrait = lowerNames.some(n => n.includes('portrait'));
+        const hasLandscape = lowerNames.some(n => n.includes('landscape'));
+        const hasCompany = lowerNames.some(n => n.includes('company'));
+        const hasContractor = lowerNames.some(n => n.includes('contractor'));
+
+        if (!hasPortrait || !hasLandscape) {
+          issues.push('Thumbnails must include one Portrait and one Landscape image.');
+        }
+
+        if (!hasCompany || !hasContractor) {
+          issues.push('Thumbnails must include both Company and Contractor variation.');
+        }
+      }
+
+      for (const entry of state.files) {
+        const name = entry.file.name;
+        const city = getCityFromFile(name);
+        const service = getServiceFromFile(name);
+        const type = getImageType(name);
+
+        if (!city) {
+          issues.push(`Cannot detect city from filename: ${name}`);
+        }
+
+        if (workflow !== 'video-thumbnail' && type === 'paa' && !service) {
+          issues.push(`Cannot detect service from filename: ${name}`);
+        }
+
+        if (type === 'unknown') {
+          issues.push(`Unknown filename format: ${name}`);
+        }
+      }
+
+      return [...new Set(issues)];
+    }
+
+    function renderServicesList() {
+      els.serviceListBox.innerHTML = '';
+      for (const service of APPROVED_SERVICES) {
+        const div = document.createElement('div');
+        div.textContent = service === 'kitchen and bath renovatioin' ? 'kitchen and bath renovation' : service;
+        els.serviceListBox.appendChild(div);
+      }
+    }
+
+    function renderFiles() {
+      els.filesContainer.innerHTML = '';
+
+      if (!state.files.length) {
+        els.filesContainer.innerHTML = '<div class="status info">No files loaded yet.</div>';
+        return;
+      }
+
+      state.files.forEach((entry, index) => {
+        const row = document.createElement('div');
+        row.className = 'file-row';
+
+        const img = document.createElement('img');
+        img.className = 'thumb';
+        img.src = entry.previewUrl;
+        img.alt = entry.file.name;
+
+        const city = getCityFromFile(entry.file.name);
+        const service = getServiceFromFile(entry.file.name);
+        const type = getImageType(entry.file.name);
+        const v = getValidationStatus(entry.file.name);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `
+          <strong>${escapeHtml(entry.file.name)}</strong>
+          <div class="pill-row">
+            <span class="pill ${v.ok ? 'good' : 'bad'}">${v.ok ? 'VALID' : v.msg}</span>
+            <span class="pill">${type.toUpperCase()}</span>
+            <span class="pill">${city || 'CITY ?'}</span>
+          </div>
+          <small>Service: ${escapeHtml(service || '❌ not detected')}</small>
+          <small>${entry.processedName ? `Output: ${escapeHtml(entry.processedName)}` : 'Pending'}</small>
+          <small>${entry.lastMessage ? escapeHtml(entry.lastMessage) : 'Metadata not written yet'}</small>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'row';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn danger';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+          URL.revokeObjectURL(entry.previewUrl);
+          state.files.splice(index, 1);
+          renderFiles();
+          computeMetadataPreview();
+        });
+
+        const inspectBtn = document.createElement('button');
+        inspectBtn.className = 'btn secondary';
+        inspectBtn.textContent = 'Inspect';
+        inspectBtn.addEventListener('click', () => {
+          setStatus('info', `Filename: ${entry.file.name}\nType: ${type}\nCity: ${city || 'not detected'}\nService: ${service || 'not detected'}\nProcessed file: ${entry.processedName || 'Not processed yet'}`);
+        });
+
+        actions.append(inspectBtn, removeBtn);
+        row.append(img, meta, actions);
+        els.filesContainer.appendChild(row);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    async function convertToJpeg(file) {
+      if (/jpe?g/i.test(file.type)) return file;
+      if (!/png/i.test(file.type)) return file;
+
+      const img = document.createElement('img');
+      const url = URL.createObjectURL(file);
+      await new Promise((res, rej) => {
+        img.onload = res;
+        img.onerror = rej;
+        img.src = url;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      URL.revokeObjectURL(url);
+
+      return new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
+    }
+
+    async function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || '');
+          const parts = result.split(',');
+          resolve(parts.length > 1 ? parts[1] : parts[0]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function addFiles(fileList) {
+      const files = Array.from(fileList).filter(file =>
+        /jpe?g|png/i.test(file.type) || /\.(jpe?g|png)$/i.test(file.name)
+      );
+
+      const existing = new Set(state.files.map(v => `${v.file.name}_${v.file.size}`));
+
+      for (const file of files) {
+        const converted = await convertToJpeg(file);
+        const key = `${converted.name}_${converted.size}`;
+        if (existing.has(key)) continue;
+
+        state.files.push({
+          file: converted,
+          previewUrl: URL.createObjectURL(converted),
+          processedBlob: null,
+          processedName: '',
+          lastMessage: file.type.includes('png') ? 'Converted PNG → JPG' : 'Queued'
+        });
+      }
+
+      renderFiles();
+      computeMetadataPreview();
+      setStatus('info', `${state.files.length} image(s) loaded.`);
+    }
+
+    function buildOutputName(originalName) {
+      return sanitizeFileName(originalName.replace(/\.(png|jpeg|jpg)$/i, '.jpg'));
+    }
+
+    function ensureUniqueName(name, usedNames) {
+      if (!usedNames.has(name)) {
+        usedNames.add(name);
+        return name;
+      }
+
+      const extMatch = name.match(/(\.[^.]*)$/);
+      const ext = extMatch ? extMatch[1] : '';
+      const base = ext ? name.slice(0, -ext.length) : name;
+
+      let counter = 2;
+      let candidate = `${base} (${counter})${ext}`;
+      while (usedNames.has(candidate)) {
+        counter += 1;
+        candidate = `${base} (${counter})${ext}`;
+      }
+
+      usedNames.add(candidate);
+      return candidate;
+    }
+
+    async function processFiles() {
+      const issues = validateInputs();
+      if (issues.length) {
+        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
+        return;
+      }
+
+      state.processed = [];
+      const usedNames = new Set();
+
+      setStatus('info', `Processing ${state.files.length} image(s) through Firebase. This may take a moment.`);
+
+      for (let i = 0; i < state.files.length; i++) {
+        const entry = state.files[i];
+
+        try {
+          const headline = buildHeadline(entry.file.name);
+          const city = getCityFromFile(entry.file.name);
+          const device = getRandomDevice();
+          const date = getRandomDate();
+          const coords = getRandomCoordsForCity(city);
+          const copyright = buildCopyright(entry.file.name);
+
+          const response = await fetch(FUNCTION_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageBase64: await fileToBase64(entry.file),
+              fileName: entry.file.name,
+              metadata: {
+                make: device.make,
+                model: device.model,
+                copyright,
+                date: exifDateTime(date),
+                lat: coords.lat,
+                lng: coords.lng,
+                headline,
+                url: els.targetUrl.value.trim(),
+                city
+              }
+            })
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Request failed with status ${response.status}`);
+          }
+
+          const blob = await response.blob();
+          const rawName = buildOutputName(entry.file.name);
+          const name = ensureUniqueName(rawName, usedNames);
+
+          entry.processedBlob = blob;
+          entry.processedName = name;
+          entry.lastMessage = `Done • ${ymdDate(date)} • ${device.make} / ${device.model} • ${coords.lat}, ${coords.lng}`;
+
+          state.processed = [...state.processed, { name, blob }];
+          renderFiles();
+        } catch (error) {
+          entry.lastMessage = `Failed: ${error.message}`;
+          renderFiles();
+        }
+      }
+
+      const failures = state.files.filter(f => !f.processedBlob).length;
+      if (failures) {
+        setStatus('warn', `Finished with ${failures} failure(s). Check the file rows for details.`);
+      } else {
+        setStatus('ok', `Finished. ${state.processed.length} image(s) processed. Use Download processed set (.zip) to save the batch.`);
+      }
+    }
+
+    async function downloadZip() {
+      if (!state.processed.length) {
+        setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.');
+        return;
+      }
+
+      const zip = new JSZip();
+      state.processed.forEach(item => zip.file(item.name, item.blob));
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'phr-exif-batch.zip';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function clearFiles() {
+      state.files.forEach(entry => URL.revokeObjectURL(entry.previewUrl));
+      state.files = [];
+      state.processed = [];
+      renderFiles();
+      computeMetadataPreview();
+      setStatus('info', 'Files cleared.');
+    }
+
+    function loadDemoValues() {
+      els.workflowType.value = 'city-paa';
+      els.targetUrl.value = 'https://phxhomeremodeling.com/tempe-bathroom-remodeling/';
+      els.copyrightYear.value = '2026';
+      computeMetadataPreview();
+      setStatus('info', 'Demo values loaded.');
+    }
+
+    $('refreshPreviewBtn').addEventListener('click', computeMetadataPreview);
+    $('validateBtn').addEventListener('click', () => {
+      const issues = validateInputs();
+      if (issues.length) {
+        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
+      } else {
+        setStatus('ok', 'Validation passed.');
+      }
+      computeMetadataPreview();
+    });
+    $('processBtn').addEventListener('click', processFiles);
+    $('downloadZipBtn').addEventListener('click', downloadZip);
+    $('clearFilesBtn').addEventListener('click', clearFiles);
+    $('loadDemoBtn').addEventListener('click', loadDemoValues);
+    els.fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+
+    ;['workflowType', 'targetUrl', 'copyrightYear'].forEach(id => {
+      $(id).addEventListener('input', computeMetadataPreview);
     });
 
-    const blob=await res.blob();
-
-    state.processed.push({
-      name:file.name.replace(/\.(png|jpeg|jpg)/i,".jpg"),
-      blob
+    els.dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      els.dropzone.classList.add('drag');
     });
-  }
 
-  alert("DONE");
-}
+    els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
 
-// ========= ZIP =========
+    els.dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      els.dropzone.classList.remove('drag');
+      addFiles(e.dataTransfer.files);
+    });
 
-async function downloadZip(){
-  const zip=new JSZip();
-
-  state.processed.forEach(f=>{
-    zip.file(f.name,f.blob);
-  });
-
-  const blob=await zip.generateAsync({type:"blob"});
-
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="phr-exif.zip";
-  a.click();
-}
-
-// ========= HELPERS =========
-
-function toBase64(file){
-  return new Promise((res)=>{
-    const r=new FileReader();
-    r.onload=()=>res(r.result.split(",")[1]);
-    r.readAsDataURL(file);
-  });
-}
-
-</script>
+    renderServicesList();
+    computeMetadataPreview();
+    renderFiles();
+  </script>
 </body>
 </html>
