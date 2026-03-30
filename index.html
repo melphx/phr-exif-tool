@@ -977,7 +977,10 @@ Pixel 8 Pro</textarea>
           entry.processedName = name;
           entry.lastMessage = `Done • ${ymdDate(fileDate)} • ${make} / ${model} • ${gps.lat}, ${gps.lng}`;
 
-          state.processed.push({ name, blob });
+          state.processed = [
+  ...state.processed,
+  { name, blob }
+];
           renderFiles();
         } catch (error) {
           entry.lastMessage = `Failed: ${error.message}`;
