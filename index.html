@@ -296,9 +296,9 @@
     <section class="hero">
       <div class="title-row">
         <div>
-          <div class="badge">Phoenix Home Remodeling • SEO Neo SOP</div>
+          <div class="badge">Phoenix Home Remodeling • SEO Neo SOP Locked</div>
           <h1>EXIF + IPTC batch editor</h1>
-          <p>Client-side image metadata tool for PAA images and video thumbnails. Images are sent to your Firebase backend for EXIF + IPTC processing, then downloaded back to the browser.</p>
+          <p>Filename is the source of truth. Images are sent to your Firebase backend for EXIF + IPTC processing, then downloaded back to the browser.</p>
         </div>
         <div class="row">
           <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
@@ -314,7 +314,7 @@
         <div class="section-title">
           <div>
             <h2>Template + SOP fields</h2>
-            <p>Anything in uppercase in your SOP is surfaced here so it is harder to miss.</p>
+            <p>Locked mode: filename drives headline and metadata for PAA images. Manual PAA input has been removed.</p>
           </div>
         </div>
 
@@ -346,13 +346,9 @@
             ZIP code
             <input id="zipCode" placeholder="85226" />
           </label>
-          <label>
+          <label style="grid-column: 1 / -1;">
             Target URL
             <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
-          </label>
-          <label>
-            PAA / image text
-            <input id="paaText" placeholder="Who is the best kitchen remodeling contractor in Chandler" />
           </label>
         </div>
 
@@ -452,7 +448,7 @@ Pixel 8 Pro</textarea>
   "85282": { "city": "Tempe", "lat": 33.3901, "lng": -111.9282 },
   "85283": { "city": "Tempe", "lat": 33.3661, "lng": -111.9258 }
 }</textarea>
-            <div class="hint">Paste your own ZIP list from the sheet later. The app adds slight jitter so city-specific images do not reuse identical coordinates.</div>
+            <div class="hint">Paste your full ZIP list from the sheet later.</div>
           </label>
           <label>
             Output plan / filename helper (JSON)
@@ -462,7 +458,7 @@ Pixel 8 Pro</textarea>
   "thumbnailTemplate": "Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling",
   "thumbnailSuffixes": ["Company", "Contractor"]
 }</textarea>
-            <div class="hint">This is optional. It is used for the helper preview and batch naming suggestions.</div>
+            <div class="hint">Used only for thumbnail preview. PAA output keeps the uploaded filename.</div>
           </label>
         </div>
 
@@ -472,12 +468,12 @@ Pixel 8 Pro</textarea>
             <button class="btn secondary" id="refreshPreviewBtn">Refresh preview</button>
           </div>
           <div class="checklist">
-            <div><strong>Headline:</strong> <span id="previewHeadline" class="mono"></span></div>
+            <div><strong>Derived headline:</strong> <span id="previewHeadline" class="mono"></span></div>
             <div><strong>Caption / URL:</strong> <span id="previewCaption" class="mono"></span></div>
             <div><strong>Copyright:</strong> <span id="previewCopyright" class="mono"></span></div>
             <div><strong>Rights city:</strong> <span id="previewRightsCity" class="mono"></span></div>
             <div><strong>GPS sample:</strong> <span id="previewGps" class="mono"></span></div>
-            <div><strong>Sample thumbnail filename:</strong> <span id="previewFilename" class="mono"></span></div>
+            <div><strong>Sample output filename:</strong> <span id="previewFilename" class="mono"></span></div>
           </div>
         </div>
       </section>
@@ -510,11 +506,11 @@ Pixel 8 Pro</textarea>
         <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
           <h3>SOP checklist</h3>
           <div class="checklist" id="checklistBox">
+            <div>Filename is the source of truth for PAA images.</div>
             <div>Backend EXIF + IPTC processing is enabled via Firebase.</div>
             <div>Camera make and model are varied for uniqueness.</div>
             <div>EXIF dates are overwritten according to the selected batch rule.</div>
-            <div>Artist, copyright, comment, headline, caption, city, and GPS are all generated from the form.</div>
-            <div>Use <span class="mono">Validate inputs</span> before running so uppercase fields and URLs are checked.</div>
+            <div>Headline and copyright are derived from the uploaded filename.</div>
           </div>
         </div>
 
@@ -543,7 +539,6 @@ Pixel 8 Pro</textarea>
       city: $('city'),
       zipCode: $('zipCode'),
       targetUrl: $('targetUrl'),
-      paaText: $('paaText'),
       artist: $('artist'),
       copyrightYear: $('copyrightYear'),
       userComment: $('userComment'),
@@ -599,6 +594,24 @@ Pixel 8 Pro</textarea>
 
     function sanitizeFileName(name) {
       return String(name || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function stripExtension(fileName) {
+      return String(fileName || '').replace(/\.[^/.]+$/, '');
+    }
+
+    function getHeadlineFromFilename(fileName) {
+      return stripExtension(fileName).replace(/^\d+-/, '').trim();
+    }
+
+    function buildHeadline(fileName) {
+      return getHeadlineFromFilename(fileName);
+    }
+
+    function buildCopyright(fileName) {
+      const year = (els.copyrightYear.value || '2026').trim();
+      const keyword = getHeadlineFromFilename(fileName);
+      return `${year} ${keyword} - Phoenix Home Remodeling`;
     }
 
     function exifDateTime(date) {
@@ -672,12 +685,16 @@ Pixel 8 Pro</textarea>
       };
     }
 
+    function getFirstUploadedFileName() {
+      return state.files.length ? state.files[0].file.name : '';
+    }
+
     function computeMetadataPreview() {
       const city = titleCase(els.city.value.trim());
       const rightsCity = (els.rightsCityUpper.value || city.toUpperCase()).trim();
-      const paa = els.paaText.value.trim();
-      const headline = buildHeadline();
-      const copyright = buildCopyright();
+      const previewFileName = getFirstUploadedFileName();
+      const headline = previewFileName ? buildHeadline(previewFileName) : 'Upload a file to preview';
+      const copyright = previewFileName ? buildCopyright(previewFileName) : 'Upload a file to preview';
       const caption = els.targetUrl.value.trim();
       const base = getBaseCoordinates();
       const jittered = base ? jitterCoordinate(base.lat, base.lng) : null;
@@ -687,33 +704,7 @@ Pixel 8 Pro</textarea>
       els.previewCopyright.textContent = copyright || '—';
       els.previewRightsCity.textContent = rightsCity || '—';
       els.previewGps.textContent = jittered ? `${jittered.lat}, ${jittered.lng}` : 'ZIP not found in JSON lookup';
-      els.previewFilename.textContent = buildSampleFilename(paa, city) || '—';
-    }
-
-    function buildHeadline() {
-      const paa = els.paaText.value.trim();
-      if (!paa) return '';
-      if (/phoenix home remodeling/i.test(paa)) return paa;
-      return `${paa} | Phoenix Home Remodeling`;
-    }
-
-    function buildCopyright() {
-      const year = (els.copyrightYear.value || '2026').trim();
-      const keyword = (els.primaryKeyword.value || els.paaText.value || '').trim();
-      return `${year} ${keyword} - Phoenix Home Remodeling`;
-    }
-
-    function buildSampleFilename(paaText, cityText) {
-      const config = getFilenameConfig();
-      if (els.workflowType.value !== 'video-thumbnail') {
-        return sanitizeFileName(`${paaText || 'PAA image'} - Phoenix Home Remodeling.jpg`);
-      }
-      const service = titleCase(els.service.value.trim());
-      const city = titleCase(cityText || els.city.value.trim());
-      const tpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
-      const suffix = (config.thumbnailSuffixes && config.thumbnailSuffixes[0]) || 'Company';
-      const body = tpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
-      return sanitizeFileName(`${config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - '}${body}.jpg`);
+      els.previewFilename.textContent = previewFileName || 'Upload a file to preview';
     }
 
     function validateInputs() {
@@ -724,8 +715,7 @@ Pixel 8 Pro</textarea>
         ['Service', els.service.value],
         ['City', els.city.value],
         ['ZIP code', els.zipCode.value],
-        ['Target URL', els.targetUrl.value],
-        ['PAA / image text', els.paaText.value]
+        ['Target URL', els.targetUrl.value]
       ];
 
       for (const [label, value] of required) {
@@ -764,7 +754,25 @@ Pixel 8 Pro</textarea>
         issues.push('Manual date is required.');
       }
 
-      return issues;
+      for (const entry of state.files) {
+        const lowerName = entry.file.name.toLowerCase();
+        const expectedCity = els.city.value.trim().toLowerCase();
+        const expectedService = els.service.value.trim().toLowerCase();
+
+        if (expectedCity && !lowerName.includes(expectedCity)) {
+          issues.push(`Filename missing city: ${entry.file.name}`);
+        }
+
+        if (expectedService && !lowerName.includes(expectedService)) {
+          issues.push(`Filename missing service: ${entry.file.name}`);
+        }
+
+        if (els.workflowType.value !== 'video-thumbnail' && !lowerName.includes('who is the best')) {
+          issues.push(`PAA filename not matching expected headline pattern: ${entry.file.name}`);
+        }
+      }
+
+      return [...new Set(issues)];
     }
 
     function renderFiles() {
@@ -802,6 +810,7 @@ Pixel 8 Pro</textarea>
           URL.revokeObjectURL(entry.previewUrl);
           state.files.splice(index, 1);
           renderFiles();
+          computeMetadataPreview();
         });
 
         const inspectBtn = document.createElement('button');
@@ -885,27 +894,43 @@ Pixel 8 Pro</textarea>
       }
 
       renderFiles();
+      computeMetadataPreview();
       setStatus('info', `${state.files.length} image(s) loaded.`);
     }
 
     function buildOutputName(originalName, fileIndex) {
-      const ext = '.jpg';
       const workflow = els.workflowType.value;
-      const city = titleCase(els.city.value.trim());
-      const service = titleCase(els.service.value.trim());
-      const paa = els.paaText.value.trim();
       const config = getFilenameConfig();
 
       if (workflow === 'video-thumbnail') {
-        const suffixes = Array.isArray(config.thumbnailSuffixes) && config.thumbnailSuffixes.length ? config.thumbnailSuffixes : ['Company', 'Contractor'];
-        const suffix = suffixes[fileIndex % suffixes.length];
-        const orientation = fileIndex % 2 === 0 ? (config.videoThumbnailLandscapePrefix || 'Landscape Thumbnail - ') : (config.videoThumbnailPortraitPrefix || 'Portrait Thumbnail - ');
-        const bodyTpl = config.thumbnailTemplate || 'Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling';
-        const body = bodyTpl.replace('{CITY}', city).replace('{SERVICE}', service).replace('{SUFFIX}', suffix);
-        return sanitizeFileName(`${orientation}${body}${ext}`);
+        const base = stripExtension(originalName);
+        const ext = '.jpg';
+        const safe = sanitizeFileName(base);
+        return `${safe}${ext}`;
       }
 
-      return sanitizeFileName(`${paa} - Phoenix Home Remodeling.jpg`);
+      return sanitizeFileName(originalName.replace(/\.(png|jpeg|jpg)$/i, '.jpg'));
+    }
+
+    function ensureUniqueName(name, usedNames) {
+      if (!usedNames.has(name)) {
+        usedNames.add(name);
+        return name;
+      }
+
+      const extMatch = name.match(/(\.[^.]*)$/);
+      const ext = extMatch ? extMatch[1] : '';
+      const base = ext ? name.slice(0, -ext.length) : name;
+
+      let counter = 2;
+      let candidate = `${base} (${counter})${ext}`;
+      while (usedNames.has(candidate)) {
+        counter += 1;
+        candidate = `${base} (${counter})${ext}`;
+      }
+
+      usedNames.add(candidate);
+      return candidate;
     }
 
     async function processFiles() {
@@ -934,6 +959,8 @@ Pixel 8 Pro</textarea>
 
       setStatus('info', `Processing ${state.files.length} image(s) through Firebase. This may take a moment for larger files.`);
 
+      const usedNames = new Set();
+
       for (let i = 0; i < state.files.length; i++) {
         const entry = state.files[i];
 
@@ -942,6 +969,9 @@ Pixel 8 Pro</textarea>
           const make = makes[i % makes.length] || sample(makes);
           const model = sample(models);
           const gps = jitterCoordinate(baseCoordinates.lat, baseCoordinates.lng);
+
+          const headline = buildHeadline(entry.file.name);
+          const copyright = buildCopyright(entry.file.name);
 
           const response = await fetch(FUNCTION_URL, {
             method: 'POST',
@@ -954,11 +984,11 @@ Pixel 8 Pro</textarea>
               metadata: {
                 make,
                 model,
-                copyright: buildCopyright(),
+                copyright,
                 date: exifDateTime(fileDate),
                 lat: gps.lat,
                 lng: gps.lng,
-                headline: buildHeadline(),
+                headline,
                 url: els.targetUrl.value.trim(),
                 city: els.city.value.trim()
               }
@@ -970,17 +1000,19 @@ Pixel 8 Pro</textarea>
             throw new Error(errorText || `Request failed with status ${response.status}`);
           }
 
-const blob = await response.blob();
-const name = `${i + 1}-${buildOutputName(entry.file.name, i)}`;
+          const blob = await response.blob();
+          const rawName = buildOutputName(entry.file.name, i);
+          const name = ensureUniqueName(rawName, usedNames);
 
           entry.processedBlob = blob;
           entry.processedName = name;
           entry.lastMessage = `Done • ${ymdDate(fileDate)} • ${make} / ${model} • ${gps.lat}, ${gps.lng}`;
 
           state.processed = [
-  ...state.processed,
-  { name, blob }
-];
+            ...state.processed,
+            { name, blob }
+          ];
+
           renderFiles();
         } catch (error) {
           entry.lastMessage = `Failed: ${error.message}`;
@@ -1021,6 +1053,7 @@ const name = `${i + 1}-${buildOutputName(entry.file.name, i)}`;
       state.processed = [];
       state.batchDate = null;
       renderFiles();
+      computeMetadataPreview();
       setStatus('info', 'Files cleared.');
     }
 
@@ -1031,7 +1064,6 @@ const name = `${i + 1}-${buildOutputName(entry.file.name, i)}`;
       els.city.value = 'Chandler';
       els.zipCode.value = '85226';
       els.targetUrl.value = 'https://phxhomeremodeling.com/chandler-kitchen-remodeling/';
-      els.paaText.value = 'Who is the best kitchen remodeling contractor in Chandler';
       els.artist.value = 'Phoenix Home Remodeling';
       els.copyrightYear.value = '2026';
       els.userComment.value = 'Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205';
@@ -1059,7 +1091,7 @@ const name = `${i + 1}-${buildOutputName(entry.file.name, i)}`;
     els.fileInput.addEventListener('change', (e) => addFiles(e.target.files));
 
     ;[
-      'workflowType','primaryKeyword','service','city','zipCode','targetUrl','paaText',
+      'workflowType','primaryKeyword','service','city','zipCode','targetUrl',
       'artist','copyrightYear','userComment','rightsCityUpper','cameraMakes',
       'cameraModels','dateMode','manualDate','yearRange','zipLookup','filenameConfig'
     ].forEach(id => $(id).addEventListener('input', computeMetadataPreview));
