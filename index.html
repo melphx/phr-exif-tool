@@ -1,1116 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phoenix Home Remodeling EXIF Tool</title>
-  <style>
-    :root {
-      --bg: #0b1220;
-      --panel: #121a2b;
-      --panel-2: #18233a;
-      --text: #e8eefc;
-      --muted: #9fb0d1;
-      --accent: #76a9ff;
-      --accent-2: #4ade80;
-      --danger: #fb7185;
-      --warning: #fbbf24;
-      --border: #2a3859;
-      --shadow: 0 12px 30px rgba(0,0,0,.22);
-      --radius: 16px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PHR EXIF Tool (Enterprise Mode)</title>
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #09101c 0%, #0f172a 100%);
-      color: var(--text);
-    }
-
-    .wrap {
-      max-width: 1350px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    h1, h2, h3 { margin: 0 0 12px; }
-    p { color: var(--muted); line-height: 1.5; }
-
-    .hero {
-      display: grid;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 24px;
-      background: rgba(18, 26, 43, .8);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
-    }
-
-    .hero .title-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #0f203f;
-      border: 1px solid #27457d;
-      color: #cfe0ff;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.25fr .95fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 1080px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-
-    .card {
-      background: rgba(18, 26, 43, .88);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 18px;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .field-grid.three { grid-template-columns: repeat(3, 1fr); }
-    .field-grid.full > * { grid-column: 1 / -1; }
-
-    @media (max-width: 780px) {
-      .field-grid, .field-grid.three { grid-template-columns: 1fr; }
-    }
-
-    label {
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #dbe7ff;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #0f172a;
-      color: var(--text);
-      outline: none;
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 12px;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(118, 169, 255, .18);
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .btn {
-      cursor: pointer;
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: 700;
-      color: #08111f;
-      background: linear-gradient(180deg, #a7c5ff 0%, #76a9ff 100%);
-    }
-
-    .btn.secondary {
-      background: #18233a;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn.success {
-      background: linear-gradient(180deg, #9df3be 0%, #4ade80 100%);
-      color: #062813;
-    }
-
-    .btn.warn {
-      background: linear-gradient(180deg, #fddf92 0%, #fbbf24 100%);
-      color: #271802;
-    }
-
-    .btn.danger {
-      background: linear-gradient(180deg, #fecdd3 0%, #fb7185 100%);
-      color: #33060c;
-    }
-
-    .dropzone {
-      border: 2px dashed #385281;
-      border-radius: 16px;
-      padding: 22px;
-      text-align: center;
-      background: rgba(15, 23, 42, .6);
-      transition: .18s ease;
-    }
-
-    .dropzone.drag {
-      border-color: var(--accent-2);
-      background: rgba(17, 46, 31, .25);
-    }
-
-    .files {
-      display: grid;
-      gap: 10px;
-      margin-top: 14px;
-      max-height: 460px;
-      overflow: auto;
-    }
-
-    .file-row {
-      display: grid;
-      grid-template-columns: 72px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px;
-      background: rgba(24, 35, 58, .7);
-    }
-
-    .thumb {
-      width: 72px;
-      height: 72px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 1px solid #2b4168;
-      background: #101827;
-    }
-
-    .meta {
-      display: grid;
-      gap: 6px;
-    }
-
-    .meta small { color: var(--muted); }
-
-    .status {
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      border: 1px solid transparent;
-      white-space: pre-wrap;
-    }
-
-    .status.info { background: #0f203f; color: #d9e7ff; border-color: #234270; }
-    .status.ok { background: #0b2f1c; color: #d2fbe0; border-color: #1f7a44; }
-    .status.warn { background: #33260a; color: #fdecc0; border-color: #8d6410; }
-    .status.err { background: #38111a; color: #ffd5dc; border-color: #8d2942; }
-
-    .checklist {
-      display: grid;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .checklist div {
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(15, 23, 42, .55);
-      color: #dde7fb;
-      font-size: 13px;
-    }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .footer-note {
-      margin-top: 20px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    @media (max-width: 780px) {
-      .split { grid-template-columns: 1fr; }
-    }
-
-    code.inline {
-      background: #101827;
-      border: 1px solid #23324e;
-      border-radius: 8px;
-      padding: 3px 7px;
-      color: #d6e3ff;
-    }
-  </style>
+<style>
+body { font-family: Arial; background:#0f172a; color:#fff; padding:20px;}
+input,button{padding:10px;margin:5px;border-radius:8px;border:none;}
+button{cursor:pointer;background:#4ade80;}
+.file{margin:10px 0;padding:10px;background:#1e293b;border-radius:8px;}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <div class="title-row">
-        <div>
-          <div class="badge">Phoenix Home Remodeling • SEO Neo SOP Locked</div>
-          <h1>EXIF + IPTC batch editor</h1>
-          <p>Filename is the source of truth. Images are sent to your Firebase backend for EXIF + IPTC processing, then downloaded back to the browser.</p>
-        </div>
-        <div class="row">
-          <button class="btn secondary" id="loadDemoBtn">Load demo values</button>
-          <button class="btn warn" id="validateBtn">Validate inputs</button>
-          <button class="btn success" id="processBtn">GO EXIFING</button>
-        </div>
-      </div>
-      <div id="globalStatus" class="status info">Ready. Add images, fill the template, validate, then click GO EXIFING.</div>
-    </section>
 
-    <div class="grid">
-      <section class="card">
-        <div class="section-title">
-          <div>
-            <h2>Template + SOP fields</h2>
-            <p>Locked mode: filename drives headline and metadata for PAA images. Manual PAA input has been removed.</p>
-          </div>
-        </div>
+<h2>PHR EXIF TOOL (ENTERPRISE MODE)</h2>
 
-        <div class="field-grid full">
-          <label>
-            Workflow type
-            <select id="workflowType">
-              <option value="city-paa">City PAA</option>
-              <option value="brand-paa">Brand PAA</option>
-              <option value="video-thumbnail">Video Thumbnail</option>
-            </select>
-          </label>
-        </div>
+<input id="targetUrl" placeholder="Target URL"/>
+<br><br>
 
-        <div class="field-grid">
-          <label>
-            Primary keyword
-            <input id="primaryKeyword" placeholder="kitchen remodeling contractor in Chandler" />
-          </label>
-          <label>
-            Service
-            <input id="service" placeholder="bathroom remodeling" />
-          </label>
-          <label>
-            City
-            <input id="city" placeholder="Chandler" />
-          </label>
-          <label>
-            ZIP code
-            <input id="zipCode" placeholder="85226" />
-          </label>
-          <label style="grid-column: 1 / -1;">
-            Target URL
-            <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
-          </label>
-        </div>
+<input type="file" id="fileInput" multiple accept="image/*"/>
+<br><br>
 
-        <div class="field-grid">
-          <label>
-            Company / Artist
-            <input id="artist" value="Phoenix Home Remodeling" />
-          </label>
-          <label>
-            Copyright year
-            <input id="copyrightYear" value="2026" />
-          </label>
-          <label>
-            User comment
-            <input id="userComment" value="Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205" />
-          </label>
-          <label>
-            Uppercase IPTC rights city
-            <input id="rightsCityUpper" placeholder="CHANDLER" />
-          </label>
-        </div>
+<button onclick="process()">GO EXIFING</button>
+<button onclick="downloadZip()">Download ZIP</button>
 
-        <div class="split" style="margin-top:12px;">
-          <label>
-            Phone brands pool
-            <textarea id="cameraMakes">Apple
-Samsung
-Google</textarea>
-            <div class="hint">One per line. The app rotates brands for variety.</div>
-          </label>
-          <label>
-            Camera models pool
-            <textarea id="cameraModels">iPhone 8
-iPhone X
-iPhone 11
-iPhone 12
-iPhone 13
-iPhone 14
-iPhone 15 Pro
-Galaxy S8
-Galaxy S9
-Galaxy S10
-Galaxy S21
-Galaxy S22
-Galaxy S23
-Galaxy S24
-Pixel 3
-Pixel 4
-Pixel 5
-Pixel 6
-Pixel 7
-Pixel 8 Pro</textarea>
-            <div class="hint">One per line. A random model is paired for each output image.</div>
-          </label>
-        </div>
+<div id="files"></div>
 
-        <div class="field-grid three" style="margin-top:12px;">
-          <label>
-            Date mode
-            <select id="dateMode">
-              <option value="same-random">One random date for whole batch</option>
-              <option value="same-manual">Manual date for whole batch</option>
-              <option value="per-file-random">Random date per file</option>
-            </select>
-          </label>
-          <label>
-            Manual date (if selected)
-            <input id="manualDate" type="date" />
-          </label>
-          <label>
-            Random date year range
-            <input id="yearRange" value="2025-2026" placeholder="2025-2026" />
-          </label>
-        </div>
+<script type="module">
+import JSZip from "https://esm.sh/jszip";
 
-        <div class="split" style="margin-top:12px;">
-          <label>
-            ZIP → coordinates lookup (JSON)
-            <textarea id="zipLookup" spellcheck="false">{
-  "85226": { "city": "Chandler", "lat": 33.3072, "lng": -111.8910 },
-  "85224": { "city": "Chandler", "lat": 33.3277, "lng": -111.8755 },
-  "85225": { "city": "Chandler", "lat": 33.3062, "lng": -111.8315 },
-  "85286": { "city": "Chandler", "lat": 33.2767, "lng": -111.8425 },
-  "85295": { "city": "Gilbert", "lat": 33.3045, "lng": -111.7421 },
-  "85296": { "city": "Gilbert", "lat": 33.3201, "lng": -111.7361 },
-  "85297": { "city": "Gilbert", "lat": 33.2784, "lng": -111.7100 },
-  "85233": { "city": "Gilbert", "lat": 33.3645, "lng": -111.8081 },
-  "85044": { "city": "Phoenix", "lat": 33.3348, "lng": -111.9977 },
-  "85048": { "city": "Phoenix", "lat": 33.2942, "lng": -111.9823 },
-  "85202": { "city": "Mesa", "lat": 33.3790, "lng": -111.8757 },
-  "85204": { "city": "Mesa", "lat": 33.4011, "lng": -111.7852 },
-  "85206": { "city": "Mesa", "lat": 33.3964, "lng": -111.7189 },
-  "85210": { "city": "Mesa", "lat": 33.3897, "lng": -111.8446 },
-  "85212": { "city": "Mesa", "lat": 33.3300, "lng": -111.6347 },
-  "85213": { "city": "Mesa", "lat": 33.4373, "lng": -111.7708 },
-  "85281": { "city": "Tempe", "lat": 33.4255, "lng": -111.9400 },
-  "85282": { "city": "Tempe", "lat": 33.3901, "lng": -111.9282 },
-  "85283": { "city": "Tempe", "lat": 33.3661, "lng": -111.9258 }
-}</textarea>
-            <div class="hint">Paste your full ZIP list from the sheet later.</div>
-          </label>
-          <label>
-            Output plan / filename helper (JSON)
-            <textarea id="filenameConfig" spellcheck="false">{
-  "videoThumbnailPortraitPrefix": "Portrait Thumbnail - ",
-  "videoThumbnailLandscapePrefix": "Landscape Thumbnail - ",
-  "thumbnailTemplate": "Who is the Best {CITY} {SERVICE} {SUFFIX} - Phoenix Home Remodeling",
-  "thumbnailSuffixes": ["Company", "Contractor"]
-}</textarea>
-            <div class="hint">Used only for thumbnail preview. PAA output keeps the uploaded filename.</div>
-          </label>
-        </div>
+const FUNCTION_URL = "https://processimage-p5hobbg7wa-uc.a.run.app";
 
-        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
-          <div class="section-title">
-            <h3>Computed preview</h3>
-            <button class="btn secondary" id="refreshPreviewBtn">Refresh preview</button>
-          </div>
-          <div class="checklist">
-            <div><strong>Derived headline:</strong> <span id="previewHeadline" class="mono"></span></div>
-            <div><strong>Caption / URL:</strong> <span id="previewCaption" class="mono"></span></div>
-            <div><strong>Copyright:</strong> <span id="previewCopyright" class="mono"></span></div>
-            <div><strong>Rights city:</strong> <span id="previewRightsCity" class="mono"></span></div>
-            <div><strong>GPS sample:</strong> <span id="previewGps" class="mono"></span></div>
-            <div><strong>Sample output filename:</strong> <span id="previewFilename" class="mono"></span></div>
-          </div>
-        </div>
-      </section>
+let state = {
+  files: [],
+  processed: []
+};
 
-      <section class="card">
-        <div class="section-title">
-          <div>
-            <h2>Images</h2>
-            <p>Add JPG, JPEG, or PNG files for the batch. PNG files will be converted to JPG before upload.</p>
-          </div>
-        </div>
+// ========= CORE LOGIC =========
 
-        <div id="dropzone" class="dropzone">
-          <strong>Drop image files here</strong>
-          <p>or</p>
-          <label class="btn secondary" style="display:inline-block;">
-            Choose images
-            <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg,image/png,.png" multiple hidden />
-          </label>
-          <div class="hint" style="margin-top:12px;">For the 6 PAA images, load all 6 at once. For video thumbnails, load the 2 thumbnail images together.</div>
-        </div>
+function clean(name){return name.replace(/\.[^/.]+$/,"");}
 
-        <div class="row" style="margin-top:14px;">
-          <button class="btn secondary" id="clearFilesBtn">Clear images</button>
-          <button class="btn secondary" id="downloadZipBtn">Download processed set (.zip)</button>
-        </div>
+function getCity(name){
+  const m = clean(name).match(/ in ([a-zA-Z\s]+)$/i);
+  return m ? m[1].trim() : "";
+}
 
-        <div id="filesContainer" class="files"></div>
+function getService(name){
+  const m = clean(name).match(/best (.+?) (contractor|company)/i);
+  return m ? m[1].trim() : "";
+}
 
-        <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
-          <h3>SOP checklist</h3>
-          <div class="checklist" id="checklistBox">
-            <div>Filename is the source of truth for PAA images.</div>
-            <div>Backend EXIF + IPTC processing is enabled via Firebase.</div>
-            <div>Camera make and model are varied for uniqueness.</div>
-            <div>EXIF dates are overwritten according to the selected batch rule.</div>
-            <div>Headline and copyright are derived from the uploaded filename.</div>
-          </div>
-        </div>
+function getType(name){
+  name = name.toLowerCase();
+  if(name.includes("thumbnail")) return "thumbnail";
+  if(name.includes("who is")) return "paa";
+  return "unknown";
+}
 
-        <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually.</p>
-      </section>
-    </div>
-  </div>
+// ========= RANDOM =========
 
-  <script type="module">
-    import JSZip from 'https://esm.sh/jszip@3.10.1';
+const devices = [
+  {make:"Apple",model:"iPhone 13"},
+  {make:"Apple",model:"iPhone 15 Pro"},
+  {make:"Samsung",model:"Galaxy S23"},
+  {make:"Google",model:"Pixel 8"}
+];
 
-    const FUNCTION_URL = 'https://processimage-p5hobbg7wa-uc.a.run.app';
+function randDevice(){return devices[Math.floor(Math.random()*devices.length)];}
 
-    const $ = (id) => document.getElementById(id);
+function randDate(){
+  const now=new Date();
+  const past=new Date();
+  past.setFullYear(now.getFullYear()-2);
+  return new Date(past.getTime()+Math.random()*(now-past));
+}
 
-    const state = {
-      files: [],
-      processed: [],
-      batchDate: null,
-    };
+function exifDate(d){
+  return `${d.getFullYear()}:${String(d.getMonth()+1).padStart(2,"0")}:${String(d.getDate()).padStart(2,"0")} 12:00:00`;
+}
 
-    const els = {
-      workflowType: $('workflowType'),
-      primaryKeyword: $('primaryKeyword'),
-      service: $('service'),
-      city: $('city'),
-      zipCode: $('zipCode'),
-      targetUrl: $('targetUrl'),
-      artist: $('artist'),
-      copyrightYear: $('copyrightYear'),
-      userComment: $('userComment'),
-      rightsCityUpper: $('rightsCityUpper'),
-      cameraMakes: $('cameraMakes'),
-      cameraModels: $('cameraModels'),
-      dateMode: $('dateMode'),
-      manualDate: $('manualDate'),
-      yearRange: $('yearRange'),
-      zipLookup: $('zipLookup'),
-      filenameConfig: $('filenameConfig'),
-      fileInput: $('fileInput'),
-      filesContainer: $('filesContainer'),
-      globalStatus: $('globalStatus'),
-      previewHeadline: $('previewHeadline'),
-      previewCaption: $('previewCaption'),
-      previewCopyright: $('previewCopyright'),
-      previewRightsCity: $('previewRightsCity'),
-      previewGps: $('previewGps'),
-      previewFilename: $('previewFilename'),
-      dropzone: $('dropzone'),
-    };
+function randCoords(){
+  return {
+    lat:33.3+(Math.random()-0.5)*0.1,
+    lng:-111.9+(Math.random()-0.5)*0.1
+  };
+}
 
-    function setStatus(type, message) {
-      els.globalStatus.className = `status ${type}`;
-      els.globalStatus.textContent = message;
+// ========= FILE UI =========
+
+const fileInput = document.getElementById("fileInput");
+const filesDiv = document.getElementById("files");
+
+fileInput.onchange = e=>{
+  state.files = [...e.target.files];
+  render();
+};
+
+function render(){
+  filesDiv.innerHTML="";
+  state.files.forEach(f=>{
+    const city=getCity(f.name);
+    const service=getService(f.name);
+    const type=getType(f.name);
+
+    const div=document.createElement("div");
+    div.className="file";
+    div.innerHTML=`
+      <b>${f.name}</b><br>
+      Type: ${type}<br>
+      City: ${city || "❌"}<br>
+      Service: ${service || "❌"}
+    `;
+    filesDiv.appendChild(div);
+  });
+}
+
+// ========= PROCESS =========
+
+async function process(){
+  state.processed=[];
+
+  for(let file of state.files){
+
+    const city=getCity(file.name);
+    const service=getService(file.name);
+    const type=getType(file.name);
+
+    if(!city || type==="unknown"){
+      alert("Invalid file: "+file.name);
+      return;
     }
 
-    function readLines(value) {
-      return String(value || '')
-        .split(/\r?\n/)
-        .map(v => v.trim())
-        .filter(Boolean);
-    }
+    const device=randDevice();
+    const coords=randCoords();
+    const date=randDate();
 
-    function safeJsonParse(text, fallback) {
-      try {
-        return JSON.parse(text);
-      } catch {
-        return fallback;
-      }
-    }
+    const base64=await toBase64(file);
 
-    function sample(arr) {
-      return arr[Math.floor(Math.random() * arr.length)] || '';
-    }
-
-    function titleCase(text) {
-      return (text || '')
-        .toLowerCase()
-        .replace(/\b\w/g, c => c.toUpperCase());
-    }
-
-    function sanitizeFileName(name) {
-      return String(name || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
-    }
-
-    function stripExtension(fileName) {
-      return String(fileName || '').replace(/\.[^/.]+$/, '');
-    }
-
-    function getHeadlineFromFilename(fileName) {
-      return stripExtension(fileName).replace(/^\d+-/, '').trim();
-    }
-
-    function buildHeadline(fileName) {
-      return getHeadlineFromFilename(fileName);
-    }
-
-    function buildCopyright(fileName) {
-      const year = (els.copyrightYear.value || '2026').trim();
-      const keyword = getHeadlineFromFilename(fileName);
-      return `${year} ${keyword} - Phoenix Home Remodeling`;
-    }
-
-    function exifDateTime(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      const hh = String(Math.floor(Math.random() * 9) + 9).padStart(2, '0');
-      const mm = String(Math.floor(Math.random() * 60)).padStart(2, '0');
-      const ss = String(Math.floor(Math.random() * 60)).padStart(2, '0');
-      return `${y}:${m}:${d} ${hh}:${mm}:${ss}`;
-    }
-
-    function ymdDate(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    }
-
-    function pickDate() {
-      const mode = els.dateMode.value;
-      if (mode === 'same-manual') {
-        const raw = els.manualDate.value;
-        if (!raw) throw new Error('Manual date is required when date mode is set to manual.');
-        return new Date(`${raw}T12:00:00`);
-      }
-
-      if (mode === 'same-random') {
-        if (!state.batchDate) state.batchDate = randomDateFromRange(els.yearRange.value);
-        return state.batchDate;
-      }
-
-      return randomDateFromRange(els.yearRange.value);
-    }
-
-    function randomDateFromRange(rangeText) {
-      const match = String(rangeText || '').trim().match(/^(\d{4})\s*-\s*(\d{4})$/);
-      let startYear = 2025;
-      let endYear = 2026;
-      if (match) {
-        startYear = Number(match[1]);
-        endYear = Number(match[2]);
-      }
-      if (endYear < startYear) [startYear, endYear] = [endYear, startYear];
-      const start = new Date(startYear, 0, 1).getTime();
-      const end = new Date(endYear, 11, 31).getTime();
-      return new Date(start + Math.random() * (end - start));
-    }
-
-    function getZipLookup() {
-      return safeJsonParse(els.zipLookup.value, {});
-    }
-
-    function getFilenameConfig() {
-      return safeJsonParse(els.filenameConfig.value, {});
-    }
-
-    function getBaseCoordinates() {
-      const lookup = getZipLookup();
-      const zip = (els.zipCode.value || '').trim();
-      if (lookup[zip]) return lookup[zip];
-      return null;
-    }
-
-    function jitterCoordinate(lat, lng) {
-      const latJitter = (Math.random() - 0.5) * 0.018;
-      const lngJitter = (Math.random() - 0.5) * 0.018;
-      return {
-        lat: +(lat + latJitter).toFixed(6),
-        lng: +(lng + lngJitter).toFixed(6)
-      };
-    }
-
-    function getFirstUploadedFileName() {
-      return state.files.length ? state.files[0].file.name : '';
-    }
-
-    function computeMetadataPreview() {
-      const city = titleCase(els.city.value.trim());
-      const rightsCity = (els.rightsCityUpper.value || city.toUpperCase()).trim();
-      const previewFileName = getFirstUploadedFileName();
-      const headline = previewFileName ? buildHeadline(previewFileName) : 'Upload a file to preview';
-      const copyright = previewFileName ? buildCopyright(previewFileName) : 'Upload a file to preview';
-      const caption = els.targetUrl.value.trim();
-      const base = getBaseCoordinates();
-      const jittered = base ? jitterCoordinate(base.lat, base.lng) : null;
-
-      els.previewHeadline.textContent = headline || '—';
-      els.previewCaption.textContent = caption || '—';
-      els.previewCopyright.textContent = copyright || '—';
-      els.previewRightsCity.textContent = rightsCity || '—';
-      els.previewGps.textContent = jittered ? `${jittered.lat}, ${jittered.lng}` : 'ZIP not found in JSON lookup';
-      els.previewFilename.textContent = previewFileName || 'Upload a file to preview';
-    }
-
-    function validateInputs() {
-      const issues = [];
-
-      const required = [
-        ['Primary keyword', els.primaryKeyword.value],
-        ['Service', els.service.value],
-        ['City', els.city.value],
-        ['ZIP code', els.zipCode.value],
-        ['Target URL', els.targetUrl.value]
-      ];
-
-      for (const [label, value] of required) {
-        if (!String(value || '').trim()) issues.push(label + ' is required.');
-      }
-
-      if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) {
-        issues.push('Target URL must start with http:// or https://');
-      }
-
-      const rightsCity = (els.rightsCityUpper.value || '').trim();
-      if (!rightsCity) {
-        issues.push('Uppercase IPTC rights city is required.');
-      } else if (rightsCity !== rightsCity.toUpperCase()) {
-        issues.push('Uppercase IPTC rights city must be fully uppercase.');
-      }
-
-      const zipLookup = getZipLookup();
-      if (!zipLookup[(els.zipCode.value || '').trim()]) {
-        issues.push('ZIP code not found in lookup.');
-      }
-
-      if (!state.files.length) {
-        issues.push('Add images before processing.');
-      }
-
-      if (els.workflowType.value === 'video-thumbnail' && state.files.length !== 2) {
-        issues.push('Video thumbnail requires exactly 2 images.');
-      }
-
-      if ((els.workflowType.value === 'city-paa' || els.workflowType.value === 'brand-paa') && state.files.length !== 6) {
-        issues.push('PAA requires exactly 6 images.');
-      }
-
-      if (els.dateMode.value === 'same-manual' && !els.manualDate.value) {
-        issues.push('Manual date is required.');
-      }
-
-      for (const entry of state.files) {
-        const lowerName = entry.file.name.toLowerCase();
-        const expectedCity = els.city.value.trim().toLowerCase();
-        const expectedService = els.service.value.trim().toLowerCase();
-
-        if (expectedCity && !lowerName.includes(expectedCity)) {
-          issues.push(`Filename missing city: ${entry.file.name}`);
+    const res=await fetch(FUNCTION_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        imageBase64:base64,
+        fileName:file.name,
+        metadata:{
+          make:device.make,
+          model:device.model,
+          copyright:`2026 ${clean(file.name)} - Phoenix Home Remodeling`,
+          date:exifDate(date),
+          lat:coords.lat,
+          lng:coords.lng,
+          headline:clean(file.name),
+          url:document.getElementById("targetUrl").value,
+          city:city
         }
-
-        if (expectedService && !lowerName.includes(expectedService)) {
-          issues.push(`Filename missing service: ${entry.file.name}`);
-        }
-
-        if (els.workflowType.value !== 'video-thumbnail' && !lowerName.includes('who is the best')) {
-          issues.push(`PAA filename not matching expected headline pattern: ${entry.file.name}`);
-        }
-      }
-
-      return [...new Set(issues)];
-    }
-
-    function renderFiles() {
-      els.filesContainer.innerHTML = '';
-      if (!state.files.length) {
-        els.filesContainer.innerHTML = '<div class="status info">No files loaded yet.</div>';
-        return;
-      }
-
-      state.files.forEach((entry, index) => {
-        const row = document.createElement('div');
-        row.className = 'file-row';
-
-        const img = document.createElement('img');
-        img.className = 'thumb';
-        img.src = entry.previewUrl;
-        img.alt = entry.file.name;
-
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-        meta.innerHTML = `
-          <strong>${escapeHtml(entry.file.name)}</strong>
-          <small>${Math.round(entry.file.size / 1024)} KB • ${entry.file.type || 'image/jpeg'}</small>
-          <small>${entry.processedName ? `Output: ${escapeHtml(entry.processedName)}` : 'Pending'}</small>
-          <small>${entry.lastMessage ? escapeHtml(entry.lastMessage) : 'Metadata not written yet'}</small>
-        `;
-
-        const actions = document.createElement('div');
-        actions.className = 'row';
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'btn danger';
-        removeBtn.textContent = 'Remove';
-        removeBtn.addEventListener('click', () => {
-          URL.revokeObjectURL(entry.previewUrl);
-          state.files.splice(index, 1);
-          renderFiles();
-          computeMetadataPreview();
-        });
-
-        const inspectBtn = document.createElement('button');
-        inspectBtn.className = 'btn secondary';
-        inspectBtn.textContent = 'Inspect';
-        inspectBtn.addEventListener('click', () => {
-          setStatus('info', `Inspect is disabled in frontend mode. Metadata is being written by Firebase on download/process.\n\nProcessed file: ${entry.processedName || 'Not processed yet'}`);
-        });
-
-        actions.append(inspectBtn, removeBtn);
-        row.append(img, meta, actions);
-        els.filesContainer.appendChild(row);
-      });
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    async function convertToJpeg(file) {
-      if (/jpe?g/i.test(file.type)) return file;
-      if (!/png/i.test(file.type)) return file;
-
-      const img = document.createElement('img');
-      const url = URL.createObjectURL(file);
-      await new Promise((res, rej) => {
-        img.onload = res;
-        img.onerror = rej;
-        img.src = url;
-      });
-
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
-      URL.revokeObjectURL(url);
-
-      return new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
-    }
-
-    async function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = String(reader.result || '');
-          const parts = result.split(',');
-          resolve(parts.length > 1 ? parts[1] : parts[0]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function addFiles(fileList) {
-      const files = Array.from(fileList).filter(file => /jpe?g|png/i.test(file.type) || /\.(jpe?g|png)$/i.test(file.name));
-      const existing = new Set(state.files.map(v => `${v.file.name}_${v.file.size}`));
-
-      for (const file of files) {
-        const converted = await convertToJpeg(file);
-        const key = `${converted.name}_${converted.size}`;
-        if (existing.has(key)) continue;
-
-        state.files.push({
-          file: converted,
-          previewUrl: URL.createObjectURL(converted),
-          processedBlob: null,
-          processedName: '',
-          lastMessage: file.type.includes('png') ? 'Converted PNG → JPG' : 'Queued'
-        });
-      }
-
-      renderFiles();
-      computeMetadataPreview();
-      setStatus('info', `${state.files.length} image(s) loaded.`);
-    }
-
-    function buildOutputName(originalName, fileIndex) {
-      const workflow = els.workflowType.value;
-      const config = getFilenameConfig();
-
-      if (workflow === 'video-thumbnail') {
-        const base = stripExtension(originalName);
-        const ext = '.jpg';
-        const safe = sanitizeFileName(base);
-        return `${safe}${ext}`;
-      }
-
-      return sanitizeFileName(originalName.replace(/\.(png|jpeg|jpg)$/i, '.jpg'));
-    }
-
-    function ensureUniqueName(name, usedNames) {
-      if (!usedNames.has(name)) {
-        usedNames.add(name);
-        return name;
-      }
-
-      const extMatch = name.match(/(\.[^.]*)$/);
-      const ext = extMatch ? extMatch[1] : '';
-      const base = ext ? name.slice(0, -ext.length) : name;
-
-      let counter = 2;
-      let candidate = `${base} (${counter})${ext}`;
-      while (usedNames.has(candidate)) {
-        counter += 1;
-        candidate = `${base} (${counter})${ext}`;
-      }
-
-      usedNames.add(candidate);
-      return candidate;
-    }
-
-    async function processFiles() {
-      const issues = validateInputs();
-      if (issues.length) {
-        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
-        return;
-      }
-
-      state.batchDate = null;
-      state.processed = [];
-
-      const baseCoordinates = getBaseCoordinates();
-      const makes = readLines(els.cameraMakes.value);
-      const models = readLines(els.cameraModels.value);
-
-      if (!makes.length || !models.length) {
-        setStatus('warn', 'Add at least one camera make and one camera model.');
-        return;
-      }
-
-      if (!baseCoordinates) {
-        setStatus('warn', 'Could not find ZIP coordinates.');
-        return;
-      }
-
-      setStatus('info', `Processing ${state.files.length} image(s) through Firebase. This may take a moment for larger files.`);
-
-      const usedNames = new Set();
-
-      for (let i = 0; i < state.files.length; i++) {
-        const entry = state.files[i];
-
-        try {
-          const fileDate = pickDate();
-          const make = makes[i % makes.length] || sample(makes);
-          const model = sample(models);
-          const gps = jitterCoordinate(baseCoordinates.lat, baseCoordinates.lng);
-
-          const headline = buildHeadline(entry.file.name);
-          const copyright = buildCopyright(entry.file.name);
-
-          const response = await fetch(FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              imageBase64: await fileToBase64(entry.file),
-              fileName: entry.file.name,
-              metadata: {
-                make,
-                model,
-                copyright,
-                date: exifDateTime(fileDate),
-                lat: gps.lat,
-                lng: gps.lng,
-                headline,
-                url: els.targetUrl.value.trim(),
-                city: els.city.value.trim()
-              }
-            })
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Request failed with status ${response.status}`);
-          }
-
-          const blob = await response.blob();
-          const rawName = buildOutputName(entry.file.name, i);
-          const name = ensureUniqueName(rawName, usedNames);
-
-          entry.processedBlob = blob;
-          entry.processedName = name;
-          entry.lastMessage = `Done • ${ymdDate(fileDate)} • ${make} / ${model} • ${gps.lat}, ${gps.lng}`;
-
-          state.processed = [
-            ...state.processed,
-            { name, blob }
-          ];
-
-          renderFiles();
-        } catch (error) {
-          entry.lastMessage = `Failed: ${error.message}`;
-          renderFiles();
-        }
-      }
-
-      const failures = state.files.filter(f => !f.processedBlob).length;
-      if (failures) {
-        setStatus('warn', `Finished with ${failures} failure(s). Check the file rows for details.`);
-      } else {
-        setStatus('ok', `Finished. ${state.processed.length} image(s) processed. Use Download processed set (.zip) to save the batch.`);
-      }
-    }
-
-    async function downloadZip() {
-      if (!state.processed.length) {
-        setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.');
-        return;
-      }
-
-      const zip = new JSZip();
-      state.processed.forEach(item => zip.file(item.name, item.blob));
-
-      const blob = await zip.generateAsync({ type: 'blob' });
-      const a = document.createElement('a');
-      const city = titleCase(els.city.value.trim()) || 'batch';
-      const workflow = els.workflowType.value;
-      a.href = URL.createObjectURL(blob);
-      a.download = sanitizeFileName(`PHR-${workflow}-${city}-exif-images.zip`);
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
-    function clearFiles() {
-      state.files.forEach(entry => URL.revokeObjectURL(entry.previewUrl));
-      state.files = [];
-      state.processed = [];
-      state.batchDate = null;
-      renderFiles();
-      computeMetadataPreview();
-      setStatus('info', 'Files cleared.');
-    }
-
-    function loadDemoValues() {
-      els.workflowType.value = 'city-paa';
-      els.primaryKeyword.value = 'kitchen remodeling contractor in Chandler';
-      els.service.value = 'kitchen remodeling';
-      els.city.value = 'Chandler';
-      els.zipCode.value = '85226';
-      els.targetUrl.value = 'https://phxhomeremodeling.com/chandler-kitchen-remodeling/';
-      els.artist.value = 'Phoenix Home Remodeling';
-      els.copyrightYear.value = '2026';
-      els.userComment.value = 'Phoenix Home Remodeling 6700 W Chicago St #1 Chandler, AZ 85226 480-492-8205';
-      els.rightsCityUpper.value = 'CHANDLER';
-      els.dateMode.value = 'same-random';
-      els.yearRange.value = '2025-2026';
-      computeMetadataPreview();
-      setStatus('info', 'Demo values loaded.');
-    }
-
-    $('refreshPreviewBtn').addEventListener('click', computeMetadataPreview);
-    $('validateBtn').addEventListener('click', () => {
-      const issues = validateInputs();
-      if (issues.length) {
-        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
-      } else {
-        setStatus('ok', 'Validation passed.');
-      }
-      computeMetadataPreview();
-    });
-    $('processBtn').addEventListener('click', processFiles);
-    $('downloadZipBtn').addEventListener('click', downloadZip);
-    $('clearFilesBtn').addEventListener('click', clearFiles);
-    $('loadDemoBtn').addEventListener('click', loadDemoValues);
-    els.fileInput.addEventListener('change', (e) => addFiles(e.target.files));
-
-    ;[
-      'workflowType','primaryKeyword','service','city','zipCode','targetUrl',
-      'artist','copyrightYear','userComment','rightsCityUpper','cameraMakes',
-      'cameraModels','dateMode','manualDate','yearRange','zipLookup','filenameConfig'
-    ].forEach(id => $(id).addEventListener('input', computeMetadataPreview));
-
-    els.dropzone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      els.dropzone.classList.add('drag');
+      })
     });
 
-    els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
+    const blob=await res.blob();
 
-    els.dropzone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      els.dropzone.classList.remove('drag');
-      addFiles(e.dataTransfer.files);
+    state.processed.push({
+      name:file.name.replace(/\.(png|jpeg|jpg)/i,".jpg"),
+      blob
     });
+  }
 
-    computeMetadataPreview();
-    renderFiles();
-  </script>
+  alert("DONE");
+}
+
+// ========= ZIP =========
+
+async function downloadZip(){
+  const zip=new JSZip();
+
+  state.processed.forEach(f=>{
+    zip.file(f.name,f.blob);
+  });
+
+  const blob=await zip.generateAsync({type:"blob"});
+
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="phr-exif.zip";
+  a.click();
+}
+
+// ========= HELPERS =========
+
+function toBase64(file){
+  return new Promise((res)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(",")[1]);
+    r.readAsDataURL(file);
+  });
+}
+
+</script>
 </body>
 </html>
