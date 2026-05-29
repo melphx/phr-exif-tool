@@ -6,309 +6,57 @@
   <title>Phoenix Home Remodeling EXIF Tool</title>
   <style>
     :root {
-      --bg: #0b1220;
-      --panel: #121a2b;
-      --panel-2: #18233a;
-      --text: #e8eefc;
-      --muted: #9fb0d1;
-      --accent: #76a9ff;
-      --accent-2: #4ade80;
-      --danger: #fb7185;
-      --warning: #fbbf24;
-      --border: #2a3859;
-      --shadow: 0 12px 30px rgba(0,0,0,.22);
-      --radius: 16px;
+      --bg: #0b1220; --panel: #121a2b; --panel-2: #18233a;
+      --text: #e8eefc; --muted: #9fb0d1; --accent: #76a9ff;
+      --accent-2: #4ade80; --danger: #fb7185; --warning: #fbbf24;
+      --border: #2a3859; --shadow: 0 12px 30px rgba(0,0,0,.22); --radius: 16px;
     }
-
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #09101c 0%, #0f172a 100%);
-      color: var(--text);
-    }
-
-    .wrap {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: linear-gradient(180deg, #09101c 0%, #0f172a 100%); color: var(--text); }
+    .wrap { max-width: 1320px; margin: 0 auto; padding: 24px; }
     h1, h2, h3 { margin: 0 0 12px; }
     p { color: var(--muted); line-height: 1.5; }
-
-    .hero {
-      display: grid;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 24px;
-      background: rgba(18, 26, 43, .85);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
-    }
-
-    .hero .title-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #0f203f;
-      border: 1px solid #27457d;
-      color: #cfe0ff;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.15fr .95fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 1080px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-
-    .card {
-      background: rgba(18, 26, 43, .9);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 18px;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .field-grid.full > * {
-      grid-column: 1 / -1;
-    }
-
-    @media (max-width: 780px) {
-      .field-grid { grid-template-columns: 1fr; }
-    }
-
-    label {
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #dbe7ff;
-    }
-
-    input, select, button, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #0f172a;
-      color: var(--text);
-      outline: none;
-      font: inherit;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(118, 169, 255, .18);
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .row > * {
-      width: auto;
-    }
-
-    .btn {
-      cursor: pointer;
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: 700;
-      color: #08111f;
-      background: linear-gradient(180deg, #a7c5ff 0%, #76a9ff 100%);
-      width: auto;
-    }
-
-    .btn.secondary {
-      background: #18233a;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn.success {
-      background: linear-gradient(180deg, #9df3be 0%, #4ade80 100%);
-      color: #062813;
-    }
-
-    .btn.warn {
-      background: linear-gradient(180deg, #fddf92 0%, #fbbf24 100%);
-      color: #271802;
-    }
-
-    .btn.danger {
-      background: linear-gradient(180deg, #fecdd3 0%, #fb7185 100%);
-      color: #33060c;
-    }
-
-    .dropzone {
-      border: 2px dashed #385281;
-      border-radius: 16px;
-      padding: 22px;
-      text-align: center;
-      background: rgba(15, 23, 42, .6);
-      transition: .18s ease;
-    }
-
-    .dropzone.drag {
-      border-color: var(--accent-2);
-      background: rgba(17, 46, 31, .25);
-    }
-
-    .files {
-      display: grid;
-      gap: 10px;
-      margin-top: 14px;
-      max-height: 540px;
-      overflow: auto;
-    }
-
-    .file-row {
-      display: grid;
-      grid-template-columns: 72px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px;
-      background: rgba(24, 35, 58, .72);
-    }
-
-    .thumb {
-      width: 72px;
-      height: 72px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 1px solid #2b4168;
-      background: #101827;
-    }
-
-    .meta {
-      display: grid;
-      gap: 6px;
-    }
-
-    .meta small {
-      color: var(--muted);
-    }
-
-    .pill-row {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 2px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-      background: #12213d;
-      border: 1px solid #2a4677;
-      color: #d7e5ff;
-    }
-
-    .pill.good {
-      background: #0d2b1d;
-      border-color: #1f7a44;
-      color: #d2fbe0;
-    }
-
-    .pill.bad {
-      background: #38111a;
-      border-color: #8d2942;
-      color: #ffd5dc;
-    }
-
-    .status {
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      border: 1px solid transparent;
-      white-space: pre-wrap;
-    }
-
+    .hero { display: grid; gap: 16px; margin-bottom: 24px; padding: 24px; background: rgba(18,26,43,.85); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); backdrop-filter: blur(8px); }
+    .hero .title-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: #0f203f; border: 1px solid #27457d; color: #cfe0ff; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: 1.15fr .95fr; gap: 20px; }
+    @media (max-width: 1080px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: rgba(18,26,43,.9); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+    .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (max-width: 780px) { .field-grid { grid-template-columns: 1fr; } }
+    label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: #dbe7ff; }
+    input, select, button, textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: #0f172a; color: var(--text); outline: none; font: inherit; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(118,169,255,.18); }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .row > * { width: auto; }
+    .btn { cursor: pointer; border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 700; color: #08111f; background: linear-gradient(180deg, #a7c5ff 0%, #76a9ff 100%); width: auto; }
+    .btn.secondary { background: #18233a; color: var(--text); border: 1px solid var(--border); }
+    .btn.success { background: linear-gradient(180deg, #9df3be 0%, #4ade80 100%); color: #062813; }
+    .btn.warn { background: linear-gradient(180deg, #fddf92 0%, #fbbf24 100%); color: #271802; }
+    .btn.danger { background: linear-gradient(180deg, #fecdd3 0%, #fb7185 100%); color: #33060c; }
+    .dropzone { border: 2px dashed #385281; border-radius: 16px; padding: 22px; text-align: center; background: rgba(15,23,42,.6); transition: .18s ease; }
+    .dropzone.drag { border-color: var(--accent-2); background: rgba(17,46,31,.25); }
+    .files { display: grid; gap: 10px; margin-top: 14px; max-height: 540px; overflow: auto; }
+    .file-row { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; align-items: center; border: 1px solid var(--border); border-radius: 14px; padding: 10px; background: rgba(24,35,58,.72); }
+    .thumb { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; border: 1px solid #2b4168; background: #101827; }
+    .meta { display: grid; gap: 6px; }
+    .meta small { color: var(--muted); }
+    .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .pill { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #12213d; border: 1px solid #2a4677; color: #d7e5ff; }
+    .pill.good { background: #0d2b1d; border-color: #1f7a44; color: #d2fbe0; }
+    .pill.bad { background: #38111a; border-color: #8d2942; color: #ffd5dc; }
+    .status { padding: 10px 12px; border-radius: 12px; font-size: 13px; border: 1px solid transparent; white-space: pre-wrap; }
     .status.info { background: #0f203f; color: #d9e7ff; border-color: #234270; }
     .status.ok { background: #0b2f1c; color: #d2fbe0; border-color: #1f7a44; }
     .status.warn { background: #33260a; color: #fdecc0; border-color: #8d6410; }
     .status.err { background: #38111a; color: #ffd5dc; border-color: #8d2942; }
-
-    .checklist {
-      display: grid;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .checklist div {
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(15, 23, 42, .55);
-      color: #dde7fb;
-      font-size: 13px;
-    }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .footer-note {
-      margin-top: 20px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    .checklist { display: grid; gap: 8px; margin-top: 8px; }
+    .checklist div { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(15,23,42,.55); color: #dde7fb; font-size: 13px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .footer-note { margin-top: 20px; font-size: 12px; color: var(--muted); }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -316,7 +64,7 @@
     <section class="hero">
       <div class="title-row">
         <div>
-          <div class="badge">Phoenix Home Remodeling • Enterprise Mode</div>
+          <div class="badge">Phoenix Home Remodeling &bull; Enterprise Mode</div>
           <h1>EXIF + IPTC batch editor</h1>
           <p>Filename is the source of truth. Headline is automatically branded, and city/service are detected from the filename.</p>
         </div>
@@ -338,22 +86,18 @@
             <p>Workflow dropdown kept. Everything else important is derived automatically from the filename.</p>
           </div>
         </div>
-
         <div class="field-grid">
-          <label>
-            Workflow type
+          <label>Workflow type
             <select id="workflowType">
               <option value="city-paa">City PAA (6 images)</option>
               <option value="brand-paa">Brand PAA (6 images)</option>
               <option value="video-thumbnail">Video Thumbnail (2 images)</option>
             </select>
           </label>
-          <label>
-            Copyright year
+          <label>Copyright year
             <input id="copyrightYear" value="2026" />
           </label>
-          <label style="grid-column: 1 / -1;">
-            Target URL
+          <label style="grid-column: 1 / -1;">Target URL
             <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
           </label>
         </div>
@@ -367,7 +111,6 @@
   "85284": { "city": "Tempe", "lat": 33.3380, "lng": -111.9280 },
   "85285": { "city": "Tempe", "lat": 33.3400, "lng": -111.9400 },
   "85287": { "city": "Tempe", "lat": 33.4200, "lng": -111.9300 },
-
   "85201": { "city": "Mesa", "lat": 33.4152, "lng": -111.8315 },
   "85202": { "city": "Mesa", "lat": 33.3790, "lng": -111.8757 },
   "85203": { "city": "Mesa", "lat": 33.4370, "lng": -111.8060 },
@@ -384,7 +127,6 @@
   "85214": { "city": "Mesa", "lat": 33.4100, "lng": -111.8200 },
   "85215": { "city": "Mesa", "lat": 33.5000, "lng": -111.7000 },
   "85216": { "city": "Mesa", "lat": 33.3900, "lng": -111.8500 },
-
   "85233": { "city": "Gilbert", "lat": 33.3645, "lng": -111.8081 },
   "85234": { "city": "Gilbert", "lat": 33.3660, "lng": -111.7350 },
   "85236": { "city": "Gilbert", "lat": 33.3500, "lng": -111.7600 },
@@ -393,7 +135,6 @@
   "85297": { "city": "Gilbert", "lat": 33.2784, "lng": -111.7100 },
   "85298": { "city": "Gilbert", "lat": 33.2500, "lng": -111.7200 },
   "85299": { "city": "Gilbert", "lat": 33.3000, "lng": -111.7500 },
-
   "85224": { "city": "Chandler", "lat": 33.3277, "lng": -111.8755 },
   "85225": { "city": "Chandler", "lat": 33.3062, "lng": -111.8315 },
   "85226": { "city": "Chandler", "lat": 33.3072, "lng": -111.8910 },
@@ -402,33 +143,26 @@
   "85248": { "city": "Chandler", "lat": 33.2500, "lng": -111.8500 },
   "85249": { "city": "Chandler", "lat": 33.2300, "lng": -111.7800 },
   "85286": { "city": "Chandler", "lat": 33.2767, "lng": -111.8425 },
-
   "85248": { "city": "Sun Lakes", "lat": 33.2200, "lng": -111.8800 },
-
   "85142": { "city": "Queen Creek", "lat": 33.2500, "lng": -111.6000 },
   "85140": { "city": "Queen Creek", "lat": 33.2400, "lng": -111.5500 },
   "85143": { "city": "Queen Creek", "lat": 33.2300, "lng": -111.5600 },
   "85144": { "city": "San Tan Valley", "lat": 33.2100, "lng": -111.5600 },
-
   "85257": { "city": "Scottsdale", "lat": 33.4700, "lng": -111.9000 },
-  "85251": { "city": "Scottsdale", "lat": 33.5000, "lng": -111.9200 },
   "85250": { "city": "Scottsdale", "lat": 33.5100, "lng": -111.8900 },
   "85258": { "city": "Scottsdale", "lat": 33.5600, "lng": -111.8800 },
-
+  "85251": { "city": "Arcadia", "lat": 33.5000, "lng": -111.9200 },
+  "85018": { "city": "Arcadia", "lat": 33.5000, "lng": -111.9800 },
   "85044": { "city": "Phoenix", "lat": 33.3348, "lng": -111.9977 },
   "85045": { "city": "Phoenix", "lat": 33.3000, "lng": -112.0000 },
   "85048": { "city": "Phoenix", "lat": 33.2942, "lng": -111.9823 },
-
   "85016": { "city": "Phoenix", "lat": 33.5100, "lng": -112.0300 },
-  "85018": { "city": "Phoenix", "lat": 33.5000, "lng": -111.9800 },
-
   "85042": { "city": "Phoenix", "lat": 33.3600, "lng": -112.0300 },
   "85041": { "city": "Phoenix", "lat": 33.3900, "lng": -112.1100 },
   "85040": { "city": "Phoenix", "lat": 33.4000, "lng": -112.0300 },
-
   "85339": { "city": "Laveen", "lat": 33.3700, "lng": -112.1700 }
 }
-</textarea>
+        </textarea>
 
         <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
           <div class="section-title">
@@ -454,7 +188,6 @@
             <p>Upload JPG, JPEG, or PNG files. PNG files are converted to JPG before processing.</p>
           </div>
         </div>
-
         <div id="dropzone" class="dropzone">
           <strong>Drop image files here</strong>
           <p>or</p>
@@ -464,13 +197,10 @@
           </label>
           <div class="hint" style="margin-top:12px;">City PAA / Brand PAA expects 6 images. Video Thumbnail expects 2 images.</div>
         </div>
-
         <div class="row" style="margin-top:14px;">
           <button class="btn secondary" id="clearFilesBtn">Clear images</button>
         </div>
-
         <div id="filesContainer" class="files"></div>
-
         <p class="footer-note">This app does not upload to Google Drive or message Jeremy directly. It prepares the files locally so you can save them to the Drive folder and then send the completion message manually.</p>
       </section>
     </div>
@@ -482,18 +212,11 @@
     const FUNCTION_URL = 'https://processimage-p5hobbg7wa-uc.a.run.app';
 
     const APPROVED_SERVICES = [
-      'bathroom remodeling',
-      'kitchen remodeling',
-      'shower remodeling',
-      'home remodeling',
-      'laundry room remodeling',
-      'home improvement contractor',
-      'home remodel designer',
-      'kitchen and bath renovation',
-      'kitchen and bath renovatioin',
-      'general contractor',
-      'living room remodel',
-      'entertainment wall remodel'
+      'bathroom remodeling','kitchen remodeling','shower remodeling',
+      'home remodeling','laundry room remodeling','home improvement contractor',
+      'home remodel designer','kitchen and bath renovation',
+      'kitchen and bath renovatioin','general contractor',
+      'living room remodel','entertainment wall remodel'
     ];
 
     const DEVICES = [
@@ -507,27 +230,16 @@
     ];
 
     const $ = (id) => document.getElementById(id);
-
-    const state = {
-      files: [],
-      processed: [],
-    };
+    const state = { files: [], processed: [] };
 
     const els = {
-      workflowType: $('workflowType'),
-      targetUrl: $('targetUrl'),
-      copyrightYear: $('copyrightYear'),
-      zipLookup: $('zipLookup'),
-      fileInput: $('fileInput'),
-      filesContainer: $('filesContainer'),
-      globalStatus: $('globalStatus'),
-      previewHeadline: $('previewHeadline'),
-      previewCity: $('previewCity'),
-      previewService: $('previewService'),
-      previewCaption: $('previewCaption'),
-      previewCopyright: $('previewCopyright'),
-      previewGps: $('previewGps'),
-      previewFilename: $('previewFilename'),
+      workflowType: $('workflowType'), targetUrl: $('targetUrl'),
+      copyrightYear: $('copyrightYear'), zipLookup: $('zipLookup'),
+      fileInput: $('fileInput'), filesContainer: $('filesContainer'),
+      globalStatus: $('globalStatus'), previewHeadline: $('previewHeadline'),
+      previewCity: $('previewCity'), previewService: $('previewService'),
+      previewCaption: $('previewCaption'), previewCopyright: $('previewCopyright'),
+      previewGps: $('previewGps'), previewFilename: $('previewFilename'),
       dropzone: $('dropzone')
     };
 
@@ -537,22 +249,13 @@
     }
 
     function safeJsonParse(text, fallback) {
-      try {
-        return JSON.parse(text);
-      } catch {
-        return fallback;
-      }
+      try { return JSON.parse(text); } catch { return fallback; }
     }
 
-    function sample(arr) {
-      return arr[Math.floor(Math.random() * arr.length)] || '';
-    }
+    function sample(arr) { return arr[Math.floor(Math.random() * arr.length)] || ''; }
 
     function sanitizeFileName(name) {
-      return String(name || '')
-        .replace(/[\\/:*?"<>|]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      return String(name || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
     function stripExtension(fileName) {
@@ -564,19 +267,11 @@
     }
 
     function normalizeForMatch(text) {
-      return String(text || '')
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    function getHeadlineFromFilename(fileName) {
-      return cleanName(fileName);
+      return String(text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
     function buildHeadline(fileName) {
-      const base = getHeadlineFromFilename(fileName);
+      const base = cleanName(fileName);
       const branded = `${base} | Phoenix Home Remodeling`;
       return branded.length <= 256 ? branded : base;
     }
@@ -588,9 +283,7 @@
       return 'unknown';
     }
 
-    function getZipLookup() {
-      return safeJsonParse(els.zipLookup.value, {});
-    }
+    function getZipLookup() { return safeJsonParse(els.zipLookup.value, {}); }
 
     function getKnownCities() {
       const lookup = getZipLookup();
@@ -598,13 +291,14 @@
       return cities.sort((a, b) => b.length - a.length);
     }
 
+    // FIX: added startsWith check so city at the beginning of a filename is detected
     function getCityFromFile(fileName) {
       const normalized = normalizeForMatch(fileName);
       const cities = getKnownCities();
-
       for (const city of cities) {
         const cityNorm = normalizeForMatch(city);
         if (
+          normalized.startsWith(`${cityNorm} `) ||
           normalized.includes(` in ${cityNorm}`) ||
           normalized.includes(` ${cityNorm} `) ||
           normalized.endsWith(` ${cityNorm}`)
@@ -612,13 +306,11 @@
           return city;
         }
       }
-
       return '';
     }
 
     function getServiceFromFile(fileName) {
       const normalized = normalizeForMatch(fileName);
-
       const aliasMap = [
         { match: 'bathroom remodeler', service: 'bathroom remodeling' },
         { match: 'kitchen remodeler', service: 'kitchen remodeling' },
@@ -632,22 +324,16 @@
         { match: 'shower remodeler company', service: 'shower remodeling' },
         { match: 'home remodeler company', service: 'home remodeling' }
       ];
-
       for (const item of aliasMap) {
         if (normalized.includes(item.match)) return item.service;
       }
-
       const sorted = [...APPROVED_SERVICES].sort((a, b) => b.length - a.length);
-
       for (const service of sorted) {
         const serviceNorm = normalizeForMatch(service);
         if (normalized.includes(serviceNorm)) {
-          return service === 'kitchen and bath renovatioin'
-            ? 'kitchen and bath renovation'
-            : service;
+          return service === 'kitchen and bath renovatioin' ? 'kitchen and bath renovation' : service;
         }
       }
-
       return '';
     }
 
@@ -656,13 +342,10 @@
       return `${year} ${buildHeadline(fileName)}`;
     }
 
-    function getRandomDevice() {
-      return sample(DEVICES);
-    }
+    function getRandomDevice() { return sample(DEVICES); }
 
     function getRandomDate() {
-      const now = new Date();
-      const past = new Date();
+      const now = new Date(), past = new Date();
       past.setFullYear(now.getFullYear() - 2);
       return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
     }
@@ -678,34 +361,26 @@
     }
 
     function ymdDate(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     }
 
     function getRandomCoordsForCity(city) {
       const lookup = getZipLookup();
       const matches = Object.values(lookup).filter(v => normalizeForMatch(v.city) === normalizeForMatch(city));
       const base = matches.length ? sample(matches) : sample(Object.values(lookup));
-
       if (!base) return { lat: 33.4255, lng: -111.94 };
-
       return {
         lat: +(base.lat + (Math.random() - 0.5) * 0.01).toFixed(6),
         lng: +(base.lng + (Math.random() - 0.5) * 0.01).toFixed(6)
       };
     }
 
-    function getFirstUploadedFileName() {
-      return state.files.length ? state.files[0].file.name : '';
-    }
+    function getFirstUploadedFileName() { return state.files.length ? state.files[0].file.name : ''; }
 
     function getValidationStatus(fileName) {
       const city = getCityFromFile(fileName);
-      const service = getServiceFromFile(fileName);
       const type = getImageType(fileName);
-
+      const service = getServiceFromFile(fileName);
       if (!city) return { ok: false, msg: 'Missing city' };
       if (type === 'paa' && !service) return { ok: false, msg: 'Missing service' };
       if (type === 'unknown') return { ok: false, msg: 'Unknown format' };
@@ -713,107 +388,68 @@
     }
 
     function computeMetadataPreview() {
-      const previewFileName = getFirstUploadedFileName();
-      const headline = previewFileName ? buildHeadline(previewFileName) : 'Upload a file to preview';
-      const city = previewFileName ? getCityFromFile(previewFileName) : 'Upload a file to preview';
-      const service = previewFileName ? getServiceFromFile(previewFileName) : 'Upload a file to preview';
-      const copyright = previewFileName ? buildCopyright(previewFileName) : 'Upload a file to preview';
-      const caption = els.targetUrl.value.trim();
-      const coords = city && city !== 'Upload a file to preview' ? getRandomCoordsForCity(city) : null;
-
-      els.previewHeadline.textContent = headline || '—';
-      els.previewCity.textContent = city || '—';
-      els.previewService.textContent = service || '—';
-      els.previewCaption.textContent = caption || '—';
-      els.previewCopyright.textContent = copyright || '—';
-      els.previewGps.textContent = coords ? `${coords.lat}, ${coords.lng}` : 'Upload a file to preview';
-      els.previewFilename.textContent = previewFileName || 'Upload a file to preview';
+      const fn = getFirstUploadedFileName();
+      const placeholder = 'Upload a file to preview';
+      els.previewHeadline.textContent = fn ? buildHeadline(fn) : placeholder;
+      els.previewCity.textContent = fn ? (getCityFromFile(fn) || '—') : placeholder;
+      els.previewService.textContent = fn ? (getServiceFromFile(fn) || '—') : placeholder;
+      els.previewCaption.textContent = els.targetUrl.value.trim() || '—';
+      els.previewCopyright.textContent = fn ? buildCopyright(fn) : placeholder;
+      const city = fn ? getCityFromFile(fn) : '';
+      const coords = city ? getRandomCoordsForCity(city) : null;
+      els.previewGps.textContent = coords ? `${coords.lat}, ${coords.lng}` : placeholder;
+      els.previewFilename.textContent = fn || placeholder;
     }
 
     function validateInputs() {
       const issues = [];
       const workflow = els.workflowType.value;
-
-      if (!els.targetUrl.value.trim()) {
-        issues.push('Target URL is required.');
-      }
-
-      if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) {
-        issues.push('Target URL must start with http:// or https://');
-      }
-
-      if (!state.files.length) {
-        issues.push('Add images before processing.');
-      }
-
-      if ((workflow === 'city-paa' || workflow === 'brand-paa') && state.files.length !== 6) {
+      if (!els.targetUrl.value.trim()) issues.push('Target URL is required.');
+      if (!/^https?:\/\//i.test(els.targetUrl.value.trim())) issues.push('Target URL must start with http:// or https://');
+      if (!state.files.length) issues.push('Add images before processing.');
+      if ((workflow === 'city-paa' || workflow === 'brand-paa') && state.files.length !== 6)
         issues.push(`This workflow requires exactly 6 images (found ${state.files.length}).`);
-      }
-
-      if (workflow === 'video-thumbnail' && state.files.length !== 2) {
+      if (workflow === 'video-thumbnail' && state.files.length !== 2)
         issues.push(`This workflow requires exactly 2 images (found ${state.files.length}).`);
-      }
-
       if (workflow === 'video-thumbnail' && state.files.length) {
         const lowerNames = state.files.map(f => f.file.name.toLowerCase());
-        const hasPortrait = lowerNames.some(n => n.includes('portrait'));
-        const hasLandscape = lowerNames.some(n => n.includes('landscape'));
-        const hasCompany = lowerNames.some(n => n.includes('company'));
-        const hasContractor = lowerNames.some(n => n.includes('contractor'));
-
-        if (!hasPortrait || !hasLandscape) {
+        if (!lowerNames.some(n => n.includes('portrait')) || !lowerNames.some(n => n.includes('landscape')))
           issues.push('Thumbnails must include one Portrait and one Landscape image.');
-        }
-
-        if (!hasCompany || !hasContractor) {
+        if (!lowerNames.some(n => n.includes('company')) || !lowerNames.some(n => n.includes('contractor')))
           issues.push('Thumbnails must include both Company and Contractor variation.');
-        }
       }
-
       for (const entry of state.files) {
         const name = entry.file.name;
         const city = getCityFromFile(name);
-        const service = getServiceFromFile(name);
         const type = getImageType(name);
-
-        if (!city) {
-          issues.push(`Cannot detect city from filename: ${name}`);
-        }
-
-        if (workflow !== 'video-thumbnail' && type === 'paa' && !service) {
+        const service = getServiceFromFile(name);
+        if (!city) issues.push(`Cannot detect city from filename: ${name}`);
+        if (workflow !== 'video-thumbnail' && type === 'paa' && !service)
           issues.push(`Cannot detect service from filename: ${name}`);
-        }
-
-        if (type === 'unknown') {
-          issues.push(`Unknown filename format: ${name}`);
-        }
+        if (type === 'unknown') issues.push(`Unknown filename format: ${name}`);
       }
-
       return [...new Set(issues)];
+    }
+
+    function escapeHtml(value) {
+      return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
     }
 
     function renderFiles() {
       els.filesContainer.innerHTML = '';
-
       if (!state.files.length) {
         els.filesContainer.innerHTML = '<div class="status info">No files loaded yet.</div>';
         return;
       }
-
       state.files.forEach((entry, index) => {
         const row = document.createElement('div');
         row.className = 'file-row';
-
         const img = document.createElement('img');
-        img.className = 'thumb';
-        img.src = entry.previewUrl;
-        img.alt = entry.file.name;
-
+        img.className = 'thumb'; img.src = entry.previewUrl; img.alt = entry.file.name;
         const city = getCityFromFile(entry.file.name);
         const service = getServiceFromFile(entry.file.name);
         const type = getImageType(entry.file.name);
         const v = getValidationStatus(entry.file.name);
-
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.innerHTML = `
@@ -825,110 +461,62 @@
           </div>
           <small>Service: ${escapeHtml(service || '❌ not detected')}</small>
           <small>${entry.processedName ? `Output: ${escapeHtml(entry.processedName)}` : 'Pending'}</small>
-          <small>${entry.lastMessage ? escapeHtml(entry.lastMessage) : 'Metadata not written yet'}</small>
-        `;
-
+          <small>${entry.lastMessage ? escapeHtml(entry.lastMessage) : 'Metadata not written yet'}</small>`;
         const actions = document.createElement('div');
         actions.className = 'row';
-
         const inspectBtn = document.createElement('button');
-        inspectBtn.className = 'btn secondary';
-        inspectBtn.textContent = 'Inspect';
+        inspectBtn.className = 'btn secondary'; inspectBtn.textContent = 'Inspect';
         inspectBtn.addEventListener('click', () => {
-          setStatus(
-            'info',
-            `Filename: ${entry.file.name}\nHeadline: ${buildHeadline(entry.file.name)}\nType: ${type}\nCity: ${city || 'not detected'}\nService: ${service || 'not detected'}\nProcessed file: ${entry.processedName || 'Not processed yet'}`
-          );
+          setStatus('info', `Filename: ${entry.file.name}\nHeadline: ${buildHeadline(entry.file.name)}\nType: ${type}\nCity: ${city || 'not detected'}\nService: ${service || 'not detected'}\nProcessed file: ${entry.processedName || 'Not processed yet'}`);
         });
-
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'btn danger';
-        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'btn danger'; removeBtn.textContent = 'Remove';
         removeBtn.addEventListener('click', () => {
           URL.revokeObjectURL(entry.previewUrl);
           state.files.splice(index, 1);
-          renderFiles();
-          computeMetadataPreview();
+          renderFiles(); computeMetadataPreview();
         });
-
         actions.append(inspectBtn, removeBtn);
         row.append(img, meta, actions);
         els.filesContainer.appendChild(row);
       });
     }
 
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
     async function convertToJpeg(file) {
       if (/jpe?g/i.test(file.type)) return file;
       if (!/png/i.test(file.type)) return file;
-
       const img = document.createElement('img');
       const url = URL.createObjectURL(file);
-      await new Promise((res, rej) => {
-        img.onload = res;
-        img.onerror = rej;
-        img.src = url;
-      });
-
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width; canvas.height = img.height;
       const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
-
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
       URL.revokeObjectURL(url);
-
       return new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
     }
 
     async function fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-          const result = String(reader.result || '');
-          const parts = result.split(',');
-          resolve(parts.length > 1 ? parts[1] : parts[0]);
-        };
+        reader.onload = () => { const r = String(reader.result||''); const p = r.split(','); resolve(p.length>1?p[1]:p[0]); };
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
     }
 
     async function addFiles(fileList) {
-      const files = Array.from(fileList).filter(file =>
-        /jpe?g|png/i.test(file.type) || /\.(jpe?g|png)$/i.test(file.name)
-      );
-
+      const files = Array.from(fileList).filter(f => /jpe?g|png/i.test(f.type) || /\.(jpe?g|png)$/i.test(f.name));
       const existing = new Set(state.files.map(v => `${v.file.name}_${v.file.size}`));
-
       for (const file of files) {
         const converted = await convertToJpeg(file);
         const key = `${converted.name}_${converted.size}`;
         if (existing.has(key)) continue;
-
-        state.files.push({
-          file: converted,
-          previewUrl: URL.createObjectURL(converted),
-          processedBlob: null,
-          processedName: '',
-          lastMessage: file.type.includes('png') ? 'Converted PNG → JPG' : 'Queued'
-        });
+        state.files.push({ file: converted, previewUrl: URL.createObjectURL(converted), processedBlob: null, processedName: '', lastMessage: file.type.includes('png') ? 'Converted PNG -> JPG' : 'Queued' });
       }
-
-      renderFiles();
-      computeMetadataPreview();
+      renderFiles(); computeMetadataPreview();
       setStatus('info', `${state.files.length} image(s) loaded.`);
     }
 
@@ -937,41 +525,23 @@
     }
 
     function ensureUniqueName(name, usedNames) {
-      if (!usedNames.has(name)) {
-        usedNames.add(name);
-        return name;
-      }
-
+      if (!usedNames.has(name)) { usedNames.add(name); return name; }
       const extMatch = name.match(/(\.[^.]*)$/);
       const ext = extMatch ? extMatch[1] : '';
       const base = ext ? name.slice(0, -ext.length) : name;
-
-      let counter = 2;
-      let candidate = `${base} (${counter})${ext}`;
-      while (usedNames.has(candidate)) {
-        counter += 1;
-        candidate = `${base} (${counter})${ext}`;
-      }
-
-      usedNames.add(candidate);
-      return candidate;
+      let counter = 2, candidate = `${base} (${counter})${ext}`;
+      while (usedNames.has(candidate)) { counter++; candidate = `${base} (${counter})${ext}`; }
+      usedNames.add(candidate); return candidate;
     }
 
     async function processFiles() {
       const issues = validateInputs();
-      if (issues.length) {
-        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
-        return;
-      }
-
+      if (issues.length) { setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`); return; }
       state.processed = [];
       const usedNames = new Set();
-
       setStatus('info', `Processing ${state.files.length} image(s) through Firebase. This may take a moment.`);
-
       for (let i = 0; i < state.files.length; i++) {
         const entry = state.files[i];
-
         try {
           const headline = buildHeadline(entry.file.name);
           const city = getCityFromFile(entry.file.name);
@@ -979,98 +549,55 @@
           const date = getRandomDate();
           const coords = getRandomCoordsForCity(city);
           const copyright = buildCopyright(entry.file.name);
-
           const response = await fetch(FUNCTION_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              imageBase64: await fileToBase64(entry.file),
-              fileName: entry.file.name,
-              metadata: {
-                make: device.make,
-                model: device.model,
-                copyright,
-                date: exifDateTime(date),
-                lat: coords.lat,
-                lng: coords.lng,
-                headline,
-                url: els.targetUrl.value.trim(),
-                city
-              }
-            })
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64: await fileToBase64(entry.file), fileName: entry.file.name,
+              metadata: { make: device.make, model: device.model, copyright, date: exifDateTime(date),
+                lat: coords.lat, lng: coords.lng, headline, url: els.targetUrl.value.trim(), city } })
           });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Request failed with status ${response.status}`);
-          }
-
+          if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Request failed with status ${response.status}`); }
           const blob = await response.blob();
           const rawName = buildOutputName(entry.file.name);
           const name = ensureUniqueName(rawName, usedNames);
-
-          entry.processedBlob = blob;
-          entry.processedName = name;
-          entry.lastMessage = `Done • ${ymdDate(date)} • ${device.make} / ${device.model} • ${coords.lat}, ${coords.lng}`;
-
+          entry.processedBlob = blob; entry.processedName = name;
+          entry.lastMessage = `Done - ${ymdDate(date)} - ${device.make} / ${device.model} - ${coords.lat}, ${coords.lng}`;
           state.processed = [...state.processed, { name, blob }];
           renderFiles();
-        } catch (error) {
-          entry.lastMessage = `Failed: ${error.message}`;
-          renderFiles();
-        }
+        } catch (error) { entry.lastMessage = `Failed: ${error.message}`; renderFiles(); }
       }
-
       const failures = state.files.filter(f => !f.processedBlob).length;
-      if (failures) {
-        setStatus('warn', `Finished with ${failures} failure(s). Check the file rows for details.`);
-      } else {
-        setStatus('ok', `Finished. ${state.processed.length} image(s) processed. Use Download processed set (.zip) to save the batch.`);
-      }
+      if (failures) setStatus('warn', `Finished with ${failures} failure(s). Check the file rows for details.`);
+      else setStatus('ok', `Finished. ${state.processed.length} image(s) processed. Use Download processed set (.zip) to save the batch.`);
     }
 
     async function downloadZip() {
-      if (!state.processed.length) {
-        setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.');
-        return;
-      }
-
+      if (!state.processed.length) { setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.'); return; }
       const zip = new JSZip();
       state.processed.forEach(item => zip.file(item.name, item.blob));
-
       const blob = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'phr-exif-batch.zip';
-      a.click();
+      a.href = URL.createObjectURL(blob); a.download = 'phr-exif-batch.zip'; a.click();
       URL.revokeObjectURL(a.href);
     }
 
     function clearFiles() {
       state.files.forEach(entry => URL.revokeObjectURL(entry.previewUrl));
-      state.files = [];
-      state.processed = [];
-      renderFiles();
-      computeMetadataPreview();
-      setStatus('info', 'Files cleared.');
+      state.files = []; state.processed = [];
+      renderFiles(); computeMetadataPreview(); setStatus('info', 'Files cleared.');
     }
 
     function loadDemoValues() {
       els.workflowType.value = 'city-paa';
       els.targetUrl.value = 'https://phxhomeremodeling.com/tempe-bathroom-remodeling/';
       els.copyrightYear.value = '2026';
-      computeMetadataPreview();
-      setStatus('info', 'Demo values loaded.');
+      computeMetadataPreview(); setStatus('info', 'Demo values loaded.');
     }
 
     $('refreshPreviewBtn').addEventListener('click', computeMetadataPreview);
     $('validateBtn').addEventListener('click', () => {
       const issues = validateInputs();
-      if (issues.length) {
-        setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
-      } else {
-        setStatus('ok', 'Validation passed.');
-      }
+      if (issues.length) setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`);
+      else setStatus('ok', 'Validation passed.');
       computeMetadataPreview();
     });
     $('processBtn').addEventListener('click', processFiles);
@@ -1078,25 +605,10 @@
     $('clearFilesBtn').addEventListener('click', clearFiles);
     $('loadDemoBtn').addEventListener('click', loadDemoValues);
     els.fileInput.addEventListener('change', (e) => addFiles(e.target.files));
-
-    ['workflowType', 'targetUrl', 'copyrightYear'].forEach(id => {
-      $(id).addEventListener('input', computeMetadataPreview);
-    });
-
-    els.dropzone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      els.dropzone.classList.add('drag');
-    });
-
-    els.dropzone.addEventListener('dragleave', () => {
-      els.dropzone.classList.remove('drag');
-    });
-
-    els.dropzone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      els.dropzone.classList.remove('drag');
-      addFiles(e.dataTransfer.files);
-    });
+    ['workflowType', 'targetUrl', 'copyrightYear'].forEach(id => $(id).addEventListener('input', computeMetadataPreview));
+    els.dropzone.addEventListener('dragover', (e) => { e.preventDefault(); els.dropzone.classList.add('drag'); });
+    els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
+    els.dropzone.addEventListener('drop', (e) => { e.preventDefault(); els.dropzone.classList.remove('drag'); addFiles(e.dataTransfer.files); });
 
     computeMetadataPreview();
     renderFiles();
