@@ -191,7 +191,7 @@
             Choose images
             <input id="fileInput" type="file" accept="image/jpeg,.jpg,.jpeg,image/png,.png" multiple hidden />
           </label>
-          <div class="hint" style="margin-top:12px;">City PAA / Brand PAA expects 6 images. Video Thumbnail expects 2 images.</div>
+          <div class="hint" style="margin-top:12px;">City PAA / Brand PAA expects 6 images. Video Thumbnail expects 2 images: one Portrait and one Landscape, each using a different keyword variation (e.g. Remodeling Contractor and Renovation Contractor).</div>
         </div>
         <div class="row" style="margin-top:14px;">
           <button class="btn secondary" id="clearFilesBtn">Clear images</button>
@@ -225,11 +225,14 @@
     //   Best Design-Build Remodeling Contractor in Phoenix
     //   Best Contractor for Interior Remodeling in Phoenix
     //   Best Residential Remodeling Contractor in Phoenix
+    // "renovat*" is included alongside "remodel*" so "Best Renovation Contractor
+    // in Phoenix" resolves too. Both map to the canonical "remodeling contractor".
     const TRADE_WORDS = 'contractor|contractors|company|companies|builder|builders|business|businesses|firm|firms|specialist|specialists|pro|pros';
+    const WORK_WORDS = 'remodel|renovat';
     const GENERIC_SERVICE_RULES = [
       { service: 'remodeling contractor', patterns: [
-          new RegExp(`\\bremodel\\w*\\b.{0,40}?\\b(?:${TRADE_WORDS})\\b`),
-          new RegExp(`\\b(?:${TRADE_WORDS})\\b.{0,40}?\\bremodel\\w*\\b`)
+          new RegExp(`\\b(?:${WORK_WORDS})\\w*\\b.{0,40}?\\b(?:${TRADE_WORDS})\\b`),
+          new RegExp(`\\b(?:${TRADE_WORDS})\\b.{0,40}?\\b(?:${WORK_WORDS})\\w*\\b`)
         ] }
     ];
     const DEVICES = [
@@ -283,9 +286,50 @@
     function getImageType(fileName) {
       const name = normalizeForMatch(fileName);
       if (name.includes('thumbnail')) return 'thumbnail';
+      // FIX: thumbnails don't always carry the word "thumbnail". Portrait /
+      // Landscape only ever appear on thumbnails, so treat them as the signal.
+      if (/\b(portrait|landscape)\b/.test(name)) return 'thumbnail';
       if (name.includes('who is')) return 'paa';
       if (/(^|\s)(best|top)(\s|$)/.test(name)) return 'paa';
       return 'unknown';
+    }
+    // Thumbnail role helpers. Each returns every role the filename could fill,
+    // so a name mentioning both words stays usable for either slot.
+    function getThumbnailOrientation(fileName) {
+      const n = normalizeForMatch(fileName);
+      const roles = [];
+      if (/\bportrait\b/.test(n)) roles.push('Portrait');
+      if (/\blandscape\b/.test(n)) roles.push('Landscape');
+      return roles;
+    }
+    // FIX: the pair's two variations are expressed by the SERVICE WORDING, not by
+    // a fixed Company/Contractor pair - real names look like
+    //   "Landscape Video Thumbnail - Best Renovation Contractor in Phoenix"
+    //   "Portrait Video Thumbnail - Best Remodeling Contractor in Phoenix"
+    // So instead of hard-coding which two words to look for, strip the
+    // boilerplate (orientation, "video thumbnail", "best", the city, filler) and
+    // require the two remaining phrases to differ. This still accepts the older
+    // Remodeling Company / Remodeling Contractor pairing.
+    const THUMBNAIL_NOISE = /\b(video|thumbnail|thumbnails|thumb|portrait|landscape|best|top|who|is|the|in|for|of|and|a|an|jpg|jpeg|png)\b/g;
+    function getThumbnailTopic(fileName, city) {
+      let n = normalizeForMatch(cleanName(fileName));
+      if (city) n = n.split(normalizeForMatch(city)).join(' ');
+      return n.replace(THUMBNAIL_NOISE, ' ').replace(/\s+/g, ' ').trim();
+    }
+    // FIX: the old check used two independent some() tests over all filenames,
+    // so one file mentioning both words satisfied the pair by itself. Now the
+    // two roles must be filled by two DIFFERENT files.
+    function coversBothRoles(roleLists, roleA, roleB) {
+      for (let i = 0; i < roleLists.length; i++) {
+        for (let j = 0; j < roleLists.length; j++) {
+          if (i === j) continue;
+          if (roleLists[i].includes(roleA) && roleLists[j].includes(roleB)) return true;
+        }
+      }
+      return false;
+    }
+    function describeRoles(roleLists) {
+      return roleLists.map(list => list.length ? list.join('+') : 'none').join(', ');
     }
     function getZipLookup() { return safeJsonParse(els.zipLookup.value, {}); }
     function getKnownCities() {
@@ -413,11 +457,18 @@
       if (workflow === 'video-thumbnail' && state.files.length !== 2)
         issues.push(`This workflow requires exactly 2 images (found ${state.files.length}).`);
       if (workflow === 'video-thumbnail' && state.files.length) {
-        const lowerNames = state.files.map(f => f.file.name.toLowerCase());
-        if (!lowerNames.some(n => n.includes('portrait')) || !lowerNames.some(n => n.includes('landscape')))
-          issues.push('Thumbnails must include one Portrait and one Landscape image.');
-        if (!lowerNames.some(n => n.includes('company')) || !lowerNames.some(n => n.includes('contractor')))
-          issues.push('Thumbnails must include both Company and Contractor variation.');
+        const names = state.files.map(f => f.file.name);
+        const orientations = names.map(getThumbnailOrientation);
+        const topics = names.map(name => getThumbnailTopic(name, getCityFromFile(name)));
+        names.forEach((name, i) => {
+          if (!orientations[i].length) issues.push(`Filename must say Portrait or Landscape: ${name}`);
+          if (!topics[i]) issues.push(`No service wording left in filename after the boilerplate: ${name}`);
+        });
+        if (!coversBothRoles(orientations, 'Portrait', 'Landscape'))
+          issues.push(`Thumbnails need one Portrait and one Landscape image, in two separate files (found: ${describeRoles(orientations)}).`);
+        const namedTopics = topics.filter(Boolean);
+        if (namedTopics.length === 2 && namedTopics[0] === namedTopics[1])
+          issues.push(`Both thumbnails use the same wording ("${namedTopics[0]}"). The pair should use two different keyword variations, e.g. "Best Remodeling Contractor in Phoenix" and "Best Renovation Contractor in Phoenix".`);
       }
       for (const entry of state.files) {
         const name = entry.file.name;
