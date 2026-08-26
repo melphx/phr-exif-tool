@@ -77,7 +77,6 @@
       </div>
       <div id="globalStatus" class="status info">Ready. Add images, set the workflow, paste the target URL, validate, then click GO EXIFING.</div>
     </section>
-
     <div class="grid">
       <section class="card">
         <div class="section-title">
@@ -101,7 +100,6 @@
             <input id="targetUrl" placeholder="https://phxhomeremodeling.com/chandler-bathroom-remodeling/" />
           </label>
         </div>
-
         <textarea id="zipLookup" class="hidden">
 {
   "85280": { "city": "Tempe", "lat": 33.3897, "lng": -111.9090 },
@@ -163,7 +161,6 @@
   "85339": { "city": "Laveen", "lat": 33.3700, "lng": -112.1700 }
 }
         </textarea>
-
         <div class="card" style="margin-top:16px; padding:14px; background: rgba(15,23,42,.5);">
           <div class="section-title">
             <h3>Computed preview</h3>
@@ -180,7 +177,6 @@
           </div>
         </div>
       </section>
-
       <section class="card">
         <div class="section-title">
           <div>
@@ -205,20 +201,37 @@
       </section>
     </div>
   </div>
-
   <script type="module">
     import JSZip from 'https://esm.sh/jszip@3.10.1';
-
     const FUNCTION_URL = 'https://processimage-p5hobbg7wa-uc.a.run.app';
-
     const APPROVED_SERVICES = [
       'bathroom remodeling','kitchen remodeling','shower remodeling',
       'home remodeling','laundry room remodeling','home improvement contractor',
       'home remodel designer','kitchen and bath renovation',
       'kitchen and bath renovatioin','general contractor',
-      'living room remodel','entertainment wall remodel'
+      'living room remodel','entertainment wall remodel',
+      'remodeling contractor'
     ];
-
+    // NEW: generic catch-all services. These are only matched when no more
+    // specific service above matched first, so "Best kitchen remodeling
+    // contractor in Chandler" still resolves to "kitchen remodeling".
+    const GENERIC_SERVICES = ['remodeling contractor'];
+    // Phrasing rules for the generic services. A "remodel*" word plus a
+    // contractor/company-style word, in either order, up to 40 chars apart,
+    // all resolve to "remodeling contractor". Covers:
+    //   Best Remodeling Company in Phoenix
+    //   Best Remodeling Contractors in Phoenix
+    //   Best Remodel Contractor in Phoenix
+    //   Best Design-Build Remodeling Contractor in Phoenix
+    //   Best Contractor for Interior Remodeling in Phoenix
+    //   Best Residential Remodeling Contractor in Phoenix
+    const TRADE_WORDS = 'contractor|contractors|company|companies|builder|builders|business|businesses|firm|firms|specialist|specialists|pro|pros';
+    const GENERIC_SERVICE_RULES = [
+      { service: 'remodeling contractor', patterns: [
+          new RegExp(`\\bremodel\\w*\\b.{0,40}?\\b(?:${TRADE_WORDS})\\b`),
+          new RegExp(`\\b(?:${TRADE_WORDS})\\b.{0,40}?\\bremodel\\w*\\b`)
+        ] }
+    ];
     const DEVICES = [
       { make: 'Apple', model: 'iPhone 11' },
       { make: 'Apple', model: 'iPhone 13' },
@@ -228,10 +241,8 @@
       { make: 'Google', model: 'Pixel 7' },
       { make: 'Google', model: 'Pixel 8 Pro' }
     ];
-
     const $ = (id) => document.getElementById(id);
     const state = { files: [], processed: [] };
-
     const els = {
       workflowType: $('workflowType'), targetUrl: $('targetUrl'),
       copyrightYear: $('copyrightYear'), zipLookup: $('zipLookup'),
@@ -242,55 +253,46 @@
       previewGps: $('previewGps'), previewFilename: $('previewFilename'),
       dropzone: $('dropzone')
     };
-
     function setStatus(type, message) {
       els.globalStatus.className = `status ${type}`;
       els.globalStatus.textContent = message;
     }
-
     function safeJsonParse(text, fallback) {
       try { return JSON.parse(text); } catch { return fallback; }
     }
-
     function sample(arr) { return arr[Math.floor(Math.random() * arr.length)] || ''; }
-
     function sanitizeFileName(name) {
       return String(name || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
     }
-
     function stripExtension(fileName) {
       return String(fileName || '').replace(/\.[^/.]+$/, '');
     }
-
     function cleanName(fileName) {
       return stripExtension(fileName).replace(/^\d+-/, '').trim();
     }
-
     function normalizeForMatch(text) {
       return String(text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
     }
-
     function buildHeadline(fileName) {
       const base = cleanName(fileName);
       const branded = `${base} | Phoenix Home Remodeling`;
       return branded.length <= 256 ? branded : base;
     }
-
+    // FIX: "Best <service> in <city>" filenames are PAA images too, not just
+    // "Who is the best ..." phrasing. Sample accepted: "Best remodeling contractor in Phoenix"
     function getImageType(fileName) {
       const name = normalizeForMatch(fileName);
       if (name.includes('thumbnail')) return 'thumbnail';
       if (name.includes('who is')) return 'paa';
+      if (/(^|\s)(best|top)(\s|$)/.test(name)) return 'paa';
       return 'unknown';
     }
-
     function getZipLookup() { return safeJsonParse(els.zipLookup.value, {}); }
-
     function getKnownCities() {
       const lookup = getZipLookup();
       const cities = [...new Set(Object.values(lookup).map(v => v.city).filter(Boolean))];
       return cities.sort((a, b) => b.length - a.length);
     }
-
     // FIX: added startsWith check so city at the beginning of a filename is detected
     function getCityFromFile(fileName) {
       const normalized = normalizeForMatch(fileName);
@@ -308,7 +310,6 @@
       }
       return '';
     }
-
     function getServiceFromFile(fileName) {
       const normalized = normalizeForMatch(fileName);
       const aliasMap = [
@@ -327,29 +328,35 @@
       for (const item of aliasMap) {
         if (normalized.includes(item.match)) return item.service;
       }
-      const sorted = [...APPROVED_SERVICES].sort((a, b) => b.length - a.length);
+      // Specific services first, longest match wins.
+      const specific = APPROVED_SERVICES.filter(s => !GENERIC_SERVICES.includes(s));
+      const sorted = [...specific].sort((a, b) => b.length - a.length);
       for (const service of sorted) {
         const serviceNorm = normalizeForMatch(service);
         if (normalized.includes(serviceNorm)) {
           return service === 'kitchen and bath renovatioin' ? 'kitchen and bath renovation' : service;
         }
       }
+      // NEW: generic catch-all pass, e.g. "Best remodeling contractor in Phoenix",
+      // "Best Remodeling Company in Phoenix", "Best Contractor for Interior Remodeling in Phoenix"
+      for (const rule of GENERIC_SERVICE_RULES) {
+        if (rule.patterns.some(p => p.test(normalized))) return rule.service;
+      }
+      for (const service of GENERIC_SERVICES) {
+        if (normalized.includes(normalizeForMatch(service))) return service;
+      }
       return '';
     }
-
     function buildCopyright(fileName) {
       const year = (els.copyrightYear.value || '2026').trim();
       return `${year} ${buildHeadline(fileName)}`;
     }
-
     function getRandomDevice() { return sample(DEVICES); }
-
     function getRandomDate() {
       const now = new Date(), past = new Date();
       past.setFullYear(now.getFullYear() - 2);
       return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
     }
-
     function exifDateTime(date) {
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -359,11 +366,9 @@
       const ss = String(Math.floor(Math.random() * 60)).padStart(2, '0');
       return `${y}:${m}:${d} ${hh}:${mm}:${ss}`;
     }
-
     function ymdDate(date) {
       return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
     }
-
     function getRandomCoordsForCity(city) {
       const lookup = getZipLookup();
       const matches = Object.values(lookup).filter(v => normalizeForMatch(v.city) === normalizeForMatch(city));
@@ -374,9 +379,7 @@
         lng: +(base.lng + (Math.random() - 0.5) * 0.01).toFixed(6)
       };
     }
-
     function getFirstUploadedFileName() { return state.files.length ? state.files[0].file.name : ''; }
-
     function getValidationStatus(fileName) {
       const city = getCityFromFile(fileName);
       const type = getImageType(fileName);
@@ -386,7 +389,6 @@
       if (type === 'unknown') return { ok: false, msg: 'Unknown format' };
       return { ok: true, msg: 'VALID' };
     }
-
     function computeMetadataPreview() {
       const fn = getFirstUploadedFileName();
       const placeholder = 'Upload a file to preview';
@@ -400,7 +402,6 @@
       els.previewGps.textContent = coords ? `${coords.lat}, ${coords.lng}` : placeholder;
       els.previewFilename.textContent = fn || placeholder;
     }
-
     function validateInputs() {
       const issues = [];
       const workflow = els.workflowType.value;
@@ -430,11 +431,9 @@
       }
       return [...new Set(issues)];
     }
-
     function escapeHtml(value) {
       return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
     }
-
     function renderFiles() {
       els.filesContainer.innerHTML = '';
       if (!state.files.length) {
@@ -481,7 +480,6 @@
         els.filesContainer.appendChild(row);
       });
     }
-
     async function convertToJpeg(file) {
       if (/jpe?g/i.test(file.type)) return file;
       if (!/png/i.test(file.type)) return file;
@@ -497,7 +495,6 @@
       URL.revokeObjectURL(url);
       return new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
     }
-
     async function fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -506,7 +503,6 @@
         reader.readAsDataURL(file);
       });
     }
-
     async function addFiles(fileList) {
       const files = Array.from(fileList).filter(f => /jpe?g|png/i.test(f.type) || /\.(jpe?g|png)$/i.test(f.name));
       const existing = new Set(state.files.map(v => `${v.file.name}_${v.file.size}`));
@@ -519,11 +515,9 @@
       renderFiles(); computeMetadataPreview();
       setStatus('info', `${state.files.length} image(s) loaded.`);
     }
-
     function buildOutputName(originalName) {
       return sanitizeFileName(originalName.replace(/\.(png|jpeg|jpg)$/i, '.jpg'));
     }
-
     function ensureUniqueName(name, usedNames) {
       if (!usedNames.has(name)) { usedNames.add(name); return name; }
       const extMatch = name.match(/(\.[^.]*)$/);
@@ -533,7 +527,6 @@
       while (usedNames.has(candidate)) { counter++; candidate = `${base} (${counter})${ext}`; }
       usedNames.add(candidate); return candidate;
     }
-
     async function processFiles() {
       const issues = validateInputs();
       if (issues.length) { setStatus('warn', `Validation found ${issues.length} issue(s):\n- ${issues.join('\n- ')}`); return; }
@@ -569,7 +562,6 @@
       if (failures) setStatus('warn', `Finished with ${failures} failure(s). Check the file rows for details.`);
       else setStatus('ok', `Finished. ${state.processed.length} image(s) processed. Use Download processed set (.zip) to save the batch.`);
     }
-
     async function downloadZip() {
       if (!state.processed.length) { setStatus('warn', 'Nothing to download yet. Click GO EXIFING first.'); return; }
       const zip = new JSZip();
@@ -579,20 +571,17 @@
       a.href = URL.createObjectURL(blob); a.download = 'phr-exif-batch.zip'; a.click();
       URL.revokeObjectURL(a.href);
     }
-
     function clearFiles() {
       state.files.forEach(entry => URL.revokeObjectURL(entry.previewUrl));
       state.files = []; state.processed = [];
       renderFiles(); computeMetadataPreview(); setStatus('info', 'Files cleared.');
     }
-
     function loadDemoValues() {
       els.workflowType.value = 'city-paa';
       els.targetUrl.value = 'https://phxhomeremodeling.com/tempe-bathroom-remodeling/';
       els.copyrightYear.value = '2026';
       computeMetadataPreview(); setStatus('info', 'Demo values loaded.');
     }
-
     $('refreshPreviewBtn').addEventListener('click', computeMetadataPreview);
     $('validateBtn').addEventListener('click', () => {
       const issues = validateInputs();
@@ -609,7 +598,6 @@
     els.dropzone.addEventListener('dragover', (e) => { e.preventDefault(); els.dropzone.classList.add('drag'); });
     els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
     els.dropzone.addEventListener('drop', (e) => { e.preventDefault(); els.dropzone.classList.remove('drag'); addFiles(e.dataTransfer.files); });
-
     computeMetadataPreview();
     renderFiles();
   </script>
